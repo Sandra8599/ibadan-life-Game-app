@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ibadan Life</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:system-ui,sans-serif}
+#map{position:absolute;inset:0}
+#hud{position:absolute;top:env(safe-area-inset-top,0);left:0;right:0;z-index:1000;display:flex;gap:6px;padding:8px;justify-content:center;flex-wrap:wrap}
+.pill{background:#000b;color:#fff;border-radius:99px;padding:6px 12px;font-size:14px}
+#bar{position:absolute;bottom:0;left:0;right:0;z-index:1000;padding:8px 8px calc(8px + env(safe-area-inset-bottom,0));background:#000a}
+#log{max-height:90px;overflow:auto;color:#fff;font-size:13px;margin-bottom:6px}
+#log div{margin:2px 0}.sys{color:#facc15}
+.row{display:flex;gap:6px}
+button,input{font-size:16px;border-radius:8px;border:0;padding:10px}
+button{background:#16a34a;color:#fff;font-weight:600}
+#msg{flex:1;min-width:0}
+#join{position:fixed;inset:0;z-index:2000;background:#14532d;display:flex;align-items:center;justify-content:center}
+#join div{background:#fff;padding:24px;border-radius:16px;width:min(90vw,340px);display:flex;flex-direction:column;gap:12px}
+#join input{border:1px solid #ccc}
+</style></head><body>
+<div id="join"><div>
+<h2 style="margin:0">🇳🇬 Ibadan Life</h2>
+<input id="name" placeholder="Your name" maxlength="16">
+<label>Colour <input id="color" type="color" value="#16a34a"></label>
+<button id="go">Enter Ibadan</button>
+<small>Tap the map to walk. Reach a marker, then tap Work.</small>
+</div></div>
+<div id="map"></div>
+<div id="hud"><span class="pill" id="money">₦0</span><span class="pill" id="energy">⚡100</span><span class="pill" id="level">Lv 1</span><span class="pill" id="online">1 online</span></div>
+<div id="bar"><div id="log"></div>
+<div class="row"><button id="work">Work</button><button id="eat">Eat ₦1,500</button><input id="msg" placeholder="Chat..." maxlength="140"><button id="send">Send</button></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const map = L.map('map').setView([7.3900, 3.9100], 13);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+const socket = io(); const marks = {};
+function log(t, cls) { const d = document.createElement('div'); if (cls) d.className = cls; d.textContent = t; $('log').appendChild(d); $('log').scrollTop = 1e6; }
+$('go').onclick = () => { socket.emit('join', { name: $('name').value, color: $('color').value }); $('join').remove(); };
+socket.on('places', ps => ps.forEach(p => {
+  L.circleMarker([p.lat, p.lng], { radius: 9, color: '#b45309', fillColor: '#f59e0b', fillOpacity: .9 }).addTo(map)
+    .bindTooltip(`${p.name}: ${p.job} (₦${p.pay.toLocaleString()})`);
+}));
+socket.on('me', m => {
+  $('money').textContent = '₦' + m.money.toLocaleString(); $('energy').textContent = '⚡' + m.energy;
+  $('level').textContent = `Lv ${m.level} (${m.xp}/${m.need})`; if (m.note) log(m.note, 'sys');
+});
+socket.on('state', list => {
+  $('online').textContent = list.length + ' online';
+  list.forEach(p => {
+    if (!marks[p.id]) marks[p.id] = L.circleMarker([p.lat, p.lng], { radius: 8, color: '#fff', weight: 2, fillColor: p.color, fillOpacity: 1 })
+      .addTo(map).bindTooltip(p.name, { permanent: true, direction: 'top', offset: [0, -6] });
+    marks[p.id].setLatLng([p.lat, p.lng]).setTooltipContent(`${p.name} (Lv ${p.level})`);
+    if (p.id === socket.id && !marks.followed) { marks.followed = 1; map.setView([p.lat, p.lng], 15); }
+  });
+  const ids = new Set(list.map(p => p.id));
+  Object.keys(marks).forEach(k => { if (k !== 'followed' && !ids.has(k)) { map.removeLayer(marks[k]); delete marks[k]; } });
+});
+socket.on('chat', c => log(`${c.name}: ${c.text}`));
+map.on('click', e => socket.emit('moveTo', { lat: e.latlng.lat, lng: e.latlng.lng }));
+$('work').onclick = () => socket.emit('work');
+$('eat').onclick = () => socket.emit('eat');
+const send = () => { if ($('msg').value.trim()) { socket.emit('chat', $('msg').value); $('msg').value = ''; } };
+$('send').onclick = send; $('msg').onkeydown = e => { if (e.key === 'Enter') send(); };
+</script></body></html>
