@@ -9,9 +9,17 @@
 
 <style>
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;font-family:system-ui,sans-serif}
 
-#map{position:absolute;inset:0}
+html,body{
+  margin:0;
+  height:100%;
+  font-family:system-ui,sans-serif
+}
+
+#map{
+  position:absolute;
+  inset:0
+}
 
 #night{
   position:absolute;
@@ -62,8 +70,13 @@ html,body{margin:0;height:100%;font-family:system-ui,sans-serif}
   margin-bottom:6px
 }
 
-#log div{margin:2px 0}
-.sys{color:#facc15}
+#log div{
+  margin:2px 0
+}
+
+.sys{
+  color:#facc15
+}
 
 .row{
   display:flex;
@@ -94,6 +107,7 @@ button:disabled{
   min-width:0
 }
 
+
 /* =========================
    IBADAN LIFE FRONT PAGE
    ========================= */
@@ -112,7 +126,8 @@ button:disabled{
   );
   display:flex;
   flex-direction:column;
-  align-items:center
+  align-items:center;
+  isolation:isolate;
 }
 
 #join:before{
@@ -125,7 +140,8 @@ button:disabled{
       from 45deg at 50% 50%,
       #fff 0 12.5%,
       transparent 0 25%
-    ) 0 0/46px 46px
+    ) 0 0/46px 46px;
+  z-index:-1;
 }
 
 .sun{
@@ -144,7 +160,8 @@ button:disabled{
       transparent 72%
     );
   filter:blur(2px);
-  animation:glow 5s ease-in-out infinite
+  animation:glow 5s ease-in-out infinite;
+  z-index:-1;
 }
 
 @keyframes glow{
@@ -156,6 +173,7 @@ button:disabled{
 
 .brand{
   position:relative;
+  z-index:2;
   text-align:center;
   margin-top:7vh;
   padding:0 16px
@@ -190,6 +208,7 @@ button:disabled{
 
 .sky{
   position:relative;
+  z-index:1;
   width:100%;
   max-width:520px;
   margin-top:auto
@@ -209,11 +228,14 @@ button:disabled{
 }
 
 @keyframes drive{
-  to{left:105%}
+  to{
+    left:105%
+  }
 }
 
 .wrap{
   position:relative;
+  z-index:5;
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -221,12 +243,14 @@ button:disabled{
   margin-top:auto
 }
 
+
 /* =========================
    ACCOUNT CARD
    ========================= */
 
 .card{
   position:relative;
+  z-index:20;
   width:min(92vw,380px);
   margin:0 0 18px;
   padding:18px;
@@ -236,7 +260,8 @@ button:disabled{
   box-shadow:0 20px 50px #0006;
   display:flex;
   flex-direction:column;
-  gap:10px
+  gap:10px;
+  isolation:isolate
 }
 
 .card h2{
@@ -252,22 +277,111 @@ button:disabled{
   color:#365314
 }
 
+
+/* FIXED ACCOUNT INPUTS */
+
 .account-input{
+  position:relative;
+  z-index:30;
+  display:block;
   width:100%;
-  border:2px solid #bbf7d0;
+  height:52px;
+  border:2px solid #bbf7d0 !important;
   border-radius:12px;
-  padding:13px;
+  padding:13px 14px;
   font-size:17px;
+  font-family:inherit;
   outline:none;
-  background:#fff
+  background:#fff !important;
+
+  /* Make typed text clearly visible */
+  color:#000 !important;
+  -webkit-text-fill-color:#000 !important;
+  caret-color:#000 !important;
+
+  /* Make sure the phone can select/type normally */
+  opacity:1 !important;
+  pointer-events:auto !important;
+  user-select:text !important;
+  -webkit-user-select:text !important;
+  touch-action:manipulation;
+
+  appearance:none;
+  -webkit-appearance:none;
+}
+
+.account-input::placeholder{
+  color:#6b7280 !important;
+  -webkit-text-fill-color:#6b7280 !important;
+  opacity:1
 }
 
 .account-input:focus{
-  border-color:#16a34a;
+  border-color:#16a34a !important;
   box-shadow:0 0 0 3px #16a34a22
 }
 
+
+/* PASSWORD BOX */
+
+.passwordBox{
+  position:relative;
+  z-index:30;
+  width:100%
+}
+
+.passwordBox .account-input{
+  padding-right:82px
+}
+
+.showPassword{
+  position:absolute;
+  z-index:40;
+  right:8px;
+  top:7px;
+  height:38px;
+  padding:7px 10px;
+  border-radius:9px;
+  background:#ecfdf5;
+  color:#166534;
+  font-size:13px;
+  font-weight:800;
+  border:1px solid #bbf7d0;
+  cursor:pointer
+}
+
+.showPassword:active{
+  transform:scale(.97)
+}
+
+
+/* FORGOT PASSWORD */
+
+.forgotRow{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:-3px
+}
+
+#forgotButton{
+  background:none;
+  color:#15803d;
+  padding:2px 0;
+  font-size:13px;
+  font-weight:800;
+  border-radius:0
+}
+
+#forgotButton:hover{
+  text-decoration:underline
+}
+
+
+/* MAIN ACCOUNT BUTTON */
+
 #accountButton{
+  position:relative;
+  z-index:30;
   background:linear-gradient(90deg,#16a34a,#f59e0b);
   font-size:18px;
   padding:14px;
@@ -280,7 +394,12 @@ button:disabled{
   box-shadow:0 3px 0 #14532d
 }
 
+
+/* GOOGLE */
+
 .googleButton{
+  position:relative;
+  z-index:30;
   background:#fff;
   color:#111827;
   border:1px solid #d1d5db;
@@ -299,6 +418,9 @@ button:disabled{
   font-size:19px
 }
 
+
+/* DIVIDER */
+
 .divider{
   display:flex;
   align-items:center;
@@ -315,6 +437,9 @@ button:disabled{
   flex:1
 }
 
+
+/* SWITCH */
+
 .switch{
   text-align:center;
   font-size:14px;
@@ -328,6 +453,9 @@ button:disabled{
   font-size:14px;
   font-weight:800
 }
+
+
+/* ERROR */
 
 #accountError{
   min-height:18px;
@@ -354,12 +482,101 @@ button:disabled{
   display:none!important
 }
 
-@media(max-height:700px){
-  .brand{margin-top:3vh}
-  .brand h1{font-size:50px}
-  .sun{top:15%}
-  .card{margin-bottom:10px;padding:14px}
+
+/* =========================
+   FORGOT PASSWORD MESSAGE
+   ========================= */
+
+#forgotBox{
+  position:fixed;
+  inset:0;
+  z-index:5000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:#0009;
 }
+
+#forgotBox.visible{
+  display:flex
+}
+
+.forgotCard{
+  width:min(92vw,380px);
+  background:#fff;
+  color:#052e16;
+  border-radius:20px;
+  padding:22px;
+  box-shadow:0 20px 60px #0008;
+}
+
+.forgotCard h2{
+  margin:0 0 8px;
+  text-align:center
+}
+
+.forgotCard p{
+  font-size:14px;
+  line-height:1.5;
+  color:#374151;
+  text-align:center
+}
+
+.forgotCard input{
+  width:100%;
+  height:50px;
+  border:2px solid #bbf7d0;
+  color:#000;
+  background:#fff;
+  padding:12px;
+  outline:none
+}
+
+.forgotCard input:focus{
+  border-color:#16a34a;
+  box-shadow:0 0 0 3px #16a34a22
+}
+
+.forgotActions{
+  display:flex;
+  gap:8px;
+  margin-top:12px
+}
+
+.forgotActions button{
+  flex:1
+}
+
+#closeForgot{
+  background:#e5e7eb;
+  color:#111827
+}
+
+
+/* =========================
+   MOBILE
+   ========================= */
+
+@media(max-height:700px){
+  .brand{
+    margin-top:3vh
+  }
+
+  .brand h1{
+    font-size:50px
+  }
+
+  .sun{
+    top:15%
+  }
+
+  .card{
+    margin-bottom:10px;
+    padding:14px
+  }
+}
+
 
 /* =========================
    OLD GAME JOIN STYLES
@@ -398,6 +615,7 @@ button:disabled{
 
 <body>
 
+
 <!-- =========================
      LOGIN / SIGNUP FRONT PAGE
      ========================= -->
@@ -407,6 +625,7 @@ button:disabled{
   <div class="sun"></div>
 
   <div class="brand">
+
     <small>🇳🇬 THE CITY OF 7 HILLS 🇳🇬</small>
 
     <h1>
@@ -417,44 +636,69 @@ button:disabled{
     <p>
       Work. Ride danfo. Make friends. Live your Ibadan story.
     </p>
+
   </div>
+
 
   <div class="wrap">
 
     <div class="sky">
+
       <svg viewBox="0 0 400 130" preserveAspectRatio="none">
+
         <g fill="#052e16">
-          <path d="M0 130V92l25-9 22 8 20-12 24 10 18-8 26 9 22-11 25 10 20-9 28 11 24-8 26 9 22-10 24 9 22-8V130z" opacity=".55"/>
+
+          <path d="M0 130V92l25-9 22 8 20-12 24 10 18-8 26 9 22-11 25 10 20-9 28 11 24-8 26 9 22-10 24 9 22-8V130z"
+            opacity=".55"/>
+
           <rect x="170" y="18" width="16" height="90"/>
           <rect x="164" y="10" width="28" height="12" rx="2"/>
           <rect x="176" y="2" width="4" height="10"/>
+
           <rect x="215" y="40" width="34" height="70"/>
           <rect x="60" y="62" width="40" height="48"/>
+
           <path d="M0 130V100l18-6 16 5 20-8 18 7 22-6 20 7 24-6 22 6 18-5 22 6 24-5 20 5 22-5 26 6 24-5 20 4 24-4 20 5 0 31z"/>
+
         </g>
 
+
         <g fill="#fde68a" opacity=".85">
+
           <rect x="222" y="48" width="5" height="6"/>
           <rect x="233" y="48" width="5" height="6"/>
+
           <rect x="222" y="62" width="5" height="6"/>
           <rect x="233" y="62" width="5" height="6"/>
+
           <rect x="70" y="72" width="5" height="6"/>
           <rect x="84" y="72" width="5" height="6"/>
+
           <rect x="176" y="40" width="4" height="6"/>
+
         </g>
+
       </svg>
 
       <div class="bus">🚌</div>
+
     </div>
 
+
     <!-- LOGIN CARD -->
+
     <div class="card" id="loginCard">
 
-      <h2 id="accountTitle">Welcome Back</h2>
+      <h2 id="accountTitle">
+        Welcome Back
+      </h2>
 
       <div class="subtitle" id="accountSubtitle">
         Sign in to continue your Ibadan story
       </div>
+
+
+      <!-- USERNAME -->
 
       <input
         id="username"
@@ -463,43 +707,127 @@ button:disabled{
         placeholder="Username"
         maxlength="20"
         autocomplete="username"
+        autocapitalize="none"
+        autocorrect="off"
+        spellcheck="false"
+        inputmode="text"
       >
 
-      <input
-        id="password"
-        class="account-input"
-        type="password"
-        placeholder="Password"
-        maxlength="72"
-        autocomplete="current-password"
+
+      <!-- PASSWORD -->
+
+      <div class="passwordBox">
+
+        <input
+          id="password"
+          class="account-input"
+          type="password"
+          placeholder="Password"
+          maxlength="72"
+          autocomplete="current-password"
+          autocapitalize="none"
+          autocorrect="off"
+          spellcheck="false"
+        >
+
+        <button
+          type="button"
+          class="showPassword"
+          id="showPassword"
+        >
+          Show
+        </button>
+
+      </div>
+
+
+      <!-- CONFIRM PASSWORD -->
+
+      <div
+        class="passwordBox hidden"
+        id="confirmPasswordBox"
       >
 
-      <input
-        id="confirmPassword"
-        class="account-input hidden"
-        type="password"
-        placeholder="Confirm password"
-        maxlength="72"
-        autocomplete="new-password"
-      >
+        <input
+          id="confirmPassword"
+          class="account-input"
+          type="password"
+          placeholder="Confirm password"
+          maxlength="72"
+          autocomplete="new-password"
+          autocapitalize="none"
+          autocorrect="off"
+          spellcheck="false"
+        >
+
+        <button
+          type="button"
+          class="showPassword"
+          id="showConfirmPassword"
+        >
+          Show
+        </button>
+
+      </div>
+
+
+      <!-- FORGOT PASSWORD -->
+
+      <div class="forgotRow" id="forgotRow">
+
+        <button
+          type="button"
+          id="forgotButton"
+        >
+          Forgot password?
+        </button>
+
+      </div>
+
 
       <div id="accountError"></div>
+
 
       <button id="accountButton">
         Sign In
       </button>
 
-      <div class="divider">OR</div>
 
-      <button class="googleButton" id="googleButton">
-        <span class="googleIcon">G</span>
+      <div class="divider">
+        OR
+      </div>
+
+
+      <button
+        class="googleButton"
+        id="googleButton"
+        type="button"
+      >
+
+        <span class="googleIcon">
+          G
+        </span>
+
         Continue with Google
+
       </button>
 
+
       <div class="switch">
-        <span id="switchText">Don't have an account?</span>
-        <button id="switchButton">Create Account</button>
+
+        <span id="switchText">
+          Don't have an account?
+        </span>
+
+        <button
+          id="switchButton"
+          type="button"
+        >
+          Create Account
+        </button>
+
       </div>
+
 
       <small>
         Your account keeps your Ibadan Life character and progress safe.
@@ -508,135 +836,415 @@ button:disabled{
     </div>
 
   </div>
+
 </div>
+
+
+<!-- =========================
+     FORGOT PASSWORD WINDOW
+     ========================= -->
+
+<div id="forgotBox">
+
+  <div class="forgotCard">
+
+    <h2>
+      Forgot Password
+    </h2>
+
+    <p>
+      Enter your username below. Password recovery will use the secure account-recovery system connected to your Ibadan Life account.
+    </p>
+
+    <input
+      id="forgotUsername"
+      type="text"
+      placeholder="Username"
+      maxlength="20"
+      autocomplete="username"
+      autocapitalize="none"
+      autocorrect="off"
+      spellcheck="false"
+    >
+
+    <div
+      id="forgotMessage"
+      style="
+        min-height:20px;
+        margin-top:8px;
+        text-align:center;
+        font-size:13px;
+        font-weight:600;
+        color:#b91c1c;
+      "
+    ></div>
+
+    <div class="forgotActions">
+
+      <button
+        type="button"
+        id="closeForgot"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        id="sendForgot"
+      >
+        Continue
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
 
 <!-- =========================
      GAME
      ========================= -->
 
 <div id="map"></div>
+
 <div id="night"></div>
 
+
 <div id="hud">
-  <span class="pill" id="money">₦0</span>
-  <span class="pill" id="energy">⚡100</span>
-  <span class="pill" id="level">Lv 1</span>
-  <span class="pill" id="clock">🕐</span>
-  <span class="pill" id="online">1 online</span>
+
+  <span class="pill" id="money">
+    ₦0
+  </span>
+
+  <span class="pill" id="energy">
+    ⚡100
+  </span>
+
+  <span class="pill" id="level">
+    Lv 1
+  </span>
+
+  <span class="pill" id="clock">
+    🕐
+  </span>
+
+  <span class="pill" id="online">
+    1 online
+  </span>
+
 </div>
 
+
 <div id="bar">
+
   <div id="log"></div>
 
   <div class="row">
-    <button id="work">Work</button>
-    <button id="ride">Ride ₦200</button>
-    <button id="eat">Eat</button>
-    <input id="msg" placeholder="Chat..." maxlength="140">
-    <button id="send">Send</button>
+
+    <button id="work">
+      Work
+    </button>
+
+    <button id="ride">
+      Ride ₦200
+    </button>
+
+    <button id="eat">
+      Eat
+    </button>
+
+    <input
+      id="msg"
+      placeholder="Chat..."
+      maxlength="140"
+    >
+
+    <button id="send">
+      Send
+    </button>
+
   </div>
+
 </div>
 
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
 <script src="/socket.io/socket.io.js"></script>
 
+
 <script>
+
 /* ==========================================
    ACCOUNT SCREEN
    ========================================== */
 
 let accountMode = 'login';
-let authToken = localStorage.getItem('ibadanLifeToken') || '';
 
-const $ = id => document.getElementById(id);
+let authToken =
+  localStorage.getItem('ibadanLifeToken') || '';
+
+let myPlayerId = null;
+
+
+const $ = id =>
+  document.getElementById(id);
+
 
 function showError(message){
-  $('accountError').textContent = message || '';
+
+  $('accountError').textContent =
+    message || '';
+
 }
 
+
+/* ==========================================
+   PASSWORD SHOW / HIDE
+   ========================================== */
+
+function setupPasswordToggle(inputId,buttonId){
+
+  const input =
+    $(inputId);
+
+  const button =
+    $(buttonId);
+
+  button.onclick = () => {
+
+    if(input.type === 'password'){
+
+      input.type = 'text';
+
+      button.textContent =
+        'Hide';
+
+    }else{
+
+      input.type = 'password';
+
+      button.textContent =
+        'Show';
+
+    }
+
+    input.focus();
+
+  };
+
+}
+
+
+setupPasswordToggle(
+  'password',
+  'showPassword'
+);
+
+setupPasswordToggle(
+  'confirmPassword',
+  'showConfirmPassword'
+);
+
+
+/* ==========================================
+   ACCOUNT MODE
+   ========================================== */
+
 function setAccountMode(mode){
+
   accountMode = mode;
+
   showError('');
 
   $('username').value = '';
   $('password').value = '';
   $('confirmPassword').value = '';
 
+  $('showPassword').textContent =
+    'Show';
+
+  $('showConfirmPassword').textContent =
+    'Show';
+
+  $('password').type =
+    'password';
+
+  $('confirmPassword').type =
+    'password';
+
+
   if(mode === 'signup'){
-    $('accountTitle').textContent = 'Create Account';
+
+    $('accountTitle').textContent =
+      'Create Account';
+
     $('accountSubtitle').textContent =
       'Create your account and start your Ibadan story';
 
-    $('accountButton').textContent = 'Create Account';
+    $('accountButton').textContent =
+      'Create Account';
 
-    $('confirmPassword').classList.remove('hidden');
+    $('confirmPasswordBox')
+      .classList.remove('hidden');
 
-    $('switchText').textContent = 'Already have an account?';
-    $('switchButton').textContent = 'Sign In';
+    $('forgotRow')
+      .classList.add('hidden');
 
-    $('password').autocomplete = 'new-password';
+    $('switchText').textContent =
+      'Already have an account?';
+
+    $('switchButton').textContent =
+      'Sign In';
+
+    $('password').autocomplete =
+      'new-password';
+
   }else{
-    $('accountTitle').textContent = 'Welcome Back';
+
+    $('accountTitle').textContent =
+      'Welcome Back';
+
     $('accountSubtitle').textContent =
       'Sign in to continue your Ibadan story';
 
-    $('accountButton').textContent = 'Sign In';
+    $('accountButton').textContent =
+      'Sign In';
 
-    $('confirmPassword').classList.add('hidden');
+    $('confirmPasswordBox')
+      .classList.add('hidden');
 
-    $('switchText').textContent = "Don't have an account?";
-    $('switchButton').textContent = 'Create Account';
+    $('forgotRow')
+      .classList.remove('hidden');
 
-    $('password').autocomplete = 'current-password';
+    $('switchText').textContent =
+      "Don't have an account?";
+
+    $('switchButton').textContent =
+      'Create Account';
+
+    $('password').autocomplete =
+      'current-password';
+
   }
+
 }
 
+
 $('switchButton').onclick = () => {
-  setAccountMode(accountMode === 'login' ? 'signup' : 'login');
+
+  setAccountMode(
+    accountMode === 'login'
+      ? 'signup'
+      : 'login'
+  );
+
 };
 
-$('accountButton').onclick = async () => {
 
-  const username = $('username').value.trim();
-  const password = $('password').value;
+/* ==========================================
+   LOGIN / SIGNUP
+   ========================================== */
+
+async function submitAccount(){
+
+  const username =
+    $('username').value.trim();
+
+  const password =
+    $('password').value;
 
   showError('');
 
+
   if(!username){
-    showError('Please enter a username.');
+
+    showError(
+      'Please enter a username.'
+    );
+
+    $('username').focus();
+
     return;
   }
+
 
   if(username.length < 3){
-    showError('Username must be at least 3 characters.');
+
+    showError(
+      'Username must be at least 3 characters.'
+    );
+
+    $('username').focus();
+
     return;
   }
+
 
   if(!/^[a-zA-Z0-9_]+$/.test(username)){
-    showError('Username can only use letters, numbers and _.');
+
+    showError(
+      'Username can only use letters, numbers and _.'
+    );
+
+    $('username').focus();
+
     return;
   }
+
 
   if(!password){
-    showError('Please enter your password.');
+
+    showError(
+      'Please enter your password.'
+    );
+
+    $('password').focus();
+
     return;
   }
+
 
   if(password.length < 8){
-    showError('Password must be at least 8 characters.');
+
+    showError(
+      'Password must be at least 8 characters.'
+    );
+
+    $('password').focus();
+
     return;
   }
 
+
   if(accountMode === 'signup'){
-    if($('confirmPassword').value !== password){
-      showError('Passwords do not match.');
+
+    if(
+      $('confirmPassword').value !==
+      password
+    ){
+
+      showError(
+        'Passwords do not match.'
+      );
+
+      $('confirmPassword').focus();
+
       return;
     }
+
   }
 
-  $('accountButton').disabled = true;
+
+  $('accountButton').disabled =
+    true;
+
   $('accountButton').textContent =
-    accountMode === 'signup' ? 'Creating account...' : 'Signing in...';
+    accountMode === 'signup'
+      ? 'Creating account...'
+      : 'Signing in...';
+
 
   try{
 
@@ -645,59 +1253,258 @@ $('accountButton').onclick = async () => {
         ? '/api/auth/signup'
         : '/api/auth/login';
 
-    const response = await fetch(endpoint,{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json'
-      },
-      body:JSON.stringify({
-        username,
-        password
-      })
-    });
 
-    const data = await response.json();
+    const response =
+      await fetch(
+        endpoint,
+        {
+          method:'POST',
+
+          headers:{
+            'Content-Type':
+              'application/json'
+          },
+
+          body:JSON.stringify({
+            username,
+            password
+          })
+        }
+      );
+
+
+    let data;
+
+    try{
+
+      data =
+        await response.json();
+
+    }catch{
+
+      throw new Error(
+        'The server returned an invalid response.'
+      );
+
+    }
+
 
     if(!response.ok){
-      throw new Error(data.error || 'Unable to continue.');
+
+      throw new Error(
+        data.error ||
+        'Unable to continue.'
+      );
+
     }
+
 
     if(!data.token){
-      throw new Error('The server did not return a login token.');
+
+      throw new Error(
+        'The server did not return a login token.'
+      );
+
     }
 
-    authToken = data.token;
-    localStorage.setItem('ibadanLifeToken', authToken);
 
-    startGame(data.player);
+    authToken =
+      data.token;
+
+
+    localStorage.setItem(
+      'ibadanLifeToken',
+      authToken
+    );
+
+
+    startGame(
+      data.player
+    );
+
 
   }catch(error){
 
-    showError(error.message || 'Something went wrong.');
+    showError(
+      error.message ||
+      'Something went wrong.'
+    );
 
-    $('accountButton').disabled = false;
+
+    $('accountButton').disabled =
+      false;
+
+
     $('accountButton').textContent =
       accountMode === 'signup'
         ? 'Create Account'
         : 'Sign In';
+
   }
+
+}
+
+
+$('accountButton').onclick =
+  submitAccount;
+
+
+/* ==========================================
+   ENTER KEY
+   ========================================== */
+
+$('username').addEventListener(
+  'keydown',
+  event => {
+
+    if(event.key === 'Enter'){
+
+      event.preventDefault();
+
+      submitAccount();
+
+    }
+
+  }
+);
+
+
+$('password').addEventListener(
+  'keydown',
+  event => {
+
+    if(event.key === 'Enter'){
+
+      event.preventDefault();
+
+      submitAccount();
+
+    }
+
+  }
+);
+
+
+$('confirmPassword').addEventListener(
+  'keydown',
+  event => {
+
+    if(event.key === 'Enter'){
+
+      event.preventDefault();
+
+      submitAccount();
+
+    }
+
+  }
+);
+
+
+/* ==========================================
+   FORGOT PASSWORD UI
+   ========================================== */
+
+$('forgotButton').onclick = () => {
+
+  $('forgotBox')
+    .classList.add('visible');
+
+  $('forgotUsername').value =
+    $('username').value.trim();
+
+  $('forgotMessage').textContent =
+    '';
+
+  setTimeout(
+    () => $('forgotUsername').focus(),
+    50
+  );
+
 };
 
+
+$('closeForgot').onclick = () => {
+
+  $('forgotBox')
+    .classList.remove('visible');
+
+};
+
+
+$('forgotBox').addEventListener(
+  'click',
+  event => {
+
+    if(
+      event.target ===
+      $('forgotBox')
+    ){
+
+      $('forgotBox')
+        .classList.remove('visible');
+
+    }
+
+  }
+);
+
+
 /*
-  Google login will be connected to the server
-  after the Google credentials are configured.
+  This deliberately does NOT pretend to reset
+  someone's password without secure verification.
+
+  The server-side password-recovery system will
+  be connected separately.
 */
-$('googleButton').onclick = () => {
-  showError('Google login is being connected to the account system.');
+
+$('sendForgot').onclick = () => {
+
+  const username =
+    $('forgotUsername').value.trim();
+
+
+  if(!username){
+
+    $('forgotMessage').textContent =
+      'Enter your username first.';
+
+    return;
+
+  }
+
+
+  $('forgotMessage').style.color =
+    '#b45309';
+
+  $('forgotMessage').textContent =
+    'Secure password recovery needs to be connected to the account server.';
+
+
 };
 
 
 /* ==========================================
-   GAME
+   GOOGLE LOGIN
+   ========================================== */
+
+$('googleButton').onclick = () => {
+
+  showError(
+    'Google login is ready for the Google account connection.'
+  );
+
+};
+
+
+/* ==========================================
+   GAME START
    ========================================== */
 
 let socket = null;
+
 let joinData = null;
+
 
 function startGame(player){
 
@@ -705,23 +1512,45 @@ function startGame(player){
     player = {};
   }
 
+
+  myPlayerId =
+    player.id != null
+      ? String(player.id)
+      : null;
+
+
   $('join').remove();
 
+
   joinData = {
-    name: player.name || player.username || 'Player',
-    color: player.color || '#16a34a'
+
+    name:
+      player.name ||
+      player.username ||
+      'Player',
+
+    color:
+      player.color ||
+      '#16a34a'
+
   };
 
-  socket = io({
-    autoConnect:false,
-    auth:{
-      token:authToken
-    }
-  });
+
+  socket =
+    io({
+      autoConnect:false,
+
+      auth:{
+        token:authToken
+      }
+
+    });
+
 
   setupGameSocket();
 
   socket.connect();
+
 }
 
 
@@ -731,256 +1560,471 @@ function startGame(player){
 
 function setupGameSocket(){
 
-  const map = L.map('map').setView([7.3900,3.9100],13);
+  const map =
+    L.map('map')
+      .setView(
+        [7.3900,3.9100],
+        13
+      );
+
 
   L.tileLayer(
     'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     {
-      attribution:'© OpenStreetMap'
+      attribution:
+        '© OpenStreetMap'
     }
   ).addTo(map);
 
+
   const COL = {
+
     wealthy:'#7c3aed',
+
     middle:'#2563eb',
+
     ordinary:'#16a34a',
+
     commercial:'#dc2626',
+
     older:'#b45309'
+
   };
+
 
   const npcDots = [];
+
   const busMarks = {};
+
   const marks = {};
 
+
   function log(t,cls){
-    const d=document.createElement('div');
+
+    const d =
+      document.createElement('div');
+
 
     if(cls){
-      d.className=cls;
+      d.className = cls;
     }
 
-    d.textContent=t;
+
+    d.textContent =
+      t;
+
 
     $('log').appendChild(d);
-    $('log').scrollTop=1e6;
+
+    $('log').scrollTop =
+      1e6;
+
   }
 
-  socket.on('connect',()=>{
-    log('Connected to Ibadan Life.','sys');
-  });
 
-  socket.on('connect_error',(error)=>{
-    log('Connection error: '+(error.message || 'Unable to connect.'),'sys');
-  });
+  socket.on(
+    'connect',
+    () => {
 
-  socket.on('places',ps=>{
-    ps.forEach(p=>{
-      L.circleMarker(
-        [p.lat,p.lng],
-        {
-          radius:9,
-          color:COL[p.type],
-          fillColor:COL[p.type],
-          fillOpacity:.85
-        }
-      )
-      .addTo(map)
-      .bindTooltip(`${p.name} (${p.type}): ${p.job}`);
-    });
-  });
+      log(
+        'Connected to Ibadan Life.',
+        'sys'
+      );
 
-  socket.on('me',m=>{
-
-    if(typeof m.money === 'number'){
-      $('money').textContent =
-        '₦'+m.money.toLocaleString();
     }
+  );
 
-    if(typeof m.energy === 'number'){
-      $('energy').textContent =
-        '⚡'+m.energy;
+
+  socket.on(
+    'connect_error',
+    error => {
+
+      log(
+        'Connection error: ' +
+        (
+          error.message ||
+          'Unable to connect.'
+        ),
+        'sys'
+      );
+
     }
+  );
 
-    $('ride').textContent =
-      m.riding ? 'Get off' : 'Ride ₦200';
 
-    $('level').textContent =
-      `Lv ${m.level} (${m.xp}/${m.need})`;
+  socket.on(
+    'places',
+    ps => {
 
-    if(m.note){
-      log(m.note,'sys');
-    }
-  });
+      ps.forEach(p => {
 
-  socket.on('state',list=>{
-
-    $('online').textContent =
-      list.length+' online';
-
-    list.forEach(p=>{
-
-      if(!marks[p.id]){
-
-        marks[p.id] =
-          L.circleMarker(
-            [p.lat,p.lng],
-            {
-              radius:8,
-              color:'#fff',
-              weight:2,
-              fillColor:p.color,
-              fillOpacity:1
-            }
-          )
-          .addTo(map)
-          .bindTooltip(
-            p.name,
-            {
-              permanent:true,
-              direction:'top',
-              offset:[0,-6]
-            }
-          );
-      }
-
-      marks[p.id]
-        .setLatLng([p.lat,p.lng])
-        .setTooltipContent(
-          `${p.name} (Lv ${p.level})`
-        );
-
-      if(
-        p.id === socket.id &&
-        !marks.followed
-      ){
-        marks.followed=1;
-
-        map.setView(
+        L.circleMarker(
           [p.lat,p.lng],
-          15
+          {
+            radius:9,
+            color:COL[p.type],
+            fillColor:COL[p.type],
+            fillOpacity:.85
+          }
+        )
+        .addTo(map)
+        .bindTooltip(
+          `${p.name} (${p.type}): ${p.job}`
         );
-      }
-    });
 
-    const ids =
-      new Set(list.map(p=>p.id));
+      });
 
-    Object.keys(marks).forEach(k=>{
+    }
+  );
+
+
+  socket.on(
+    'me',
+    m => {
 
       if(
-        k !== 'followed' &&
-        !ids.has(k)
+        typeof m.money ===
+        'number'
       ){
-        map.removeLayer(marks[k]);
-        delete marks[k];
+
+        $('money').textContent =
+          '₦' +
+          m.money.toLocaleString();
+
       }
 
-    });
-  });
 
-  socket.on('world',w=>{
+      if(
+        typeof m.energy ===
+        'number'
+      ){
 
-    const hh=Math.floor(w.h);
+        $('energy').textContent =
+          '⚡' +
+          m.energy;
 
-    $('clock').textContent =
-      '🕐 '+String(hh).padStart(2,'0')+':00';
-
-    $('night').style.opacity =
-      (hh>=21 || hh<5)
-        ? .5
-        : (hh>=19 || hh<7)
-          ? .25
-          : 0;
-
-    w.npcs.forEach((n,i)=>{
-
-      if(!npcDots[i]){
-
-        npcDots[i]=
-          L.circleMarker(
-            n,
-            {
-              radius:3,
-              color:'#374151',
-              weight:1,
-              fillColor:'#9ca3af',
-              fillOpacity:1,
-              interactive:false
-            }
-          ).addTo(map);
       }
 
-      npcDots[i]
-        .setLatLng([n[0],n[1]]);
-    });
 
-    w.buses.forEach(b=>{
+      $('ride').textContent =
+        m.riding
+          ? 'Get off'
+          : 'Ride ₦200';
 
-      if(!busMarks[b[0]]){
 
-        busMarks[b[0]]=
-          L.marker(
-            [b[1],b[2]],
-            {
-              icon:L.divIcon({
-                html:'🚌',
-                className:'',
-                iconSize:[24,24],
-                iconAnchor:[12,12]
-              }),
-              interactive:false
-            }
-          ).addTo(map);
+      $('level').textContent =
+        `Lv ${m.level} (${m.xp}/${m.need})`;
+
+
+      if(m.note){
+
+        log(
+          m.note,
+          'sys'
+        );
+
       }
 
-      busMarks[b[0]]
-        .setLatLng([b[1],b[2]]);
-    });
-  });
+    }
+  );
 
-  socket.on('chat',c=>{
-    log(`${c.name}: ${c.text}`);
-  });
 
-  map.on('click',e=>{
+  socket.on(
+    'state',
+    list => {
+
+      $('online').textContent =
+        list.length +
+        ' online';
+
+
+      list.forEach(p => {
+
+        const playerId =
+          String(p.id);
+
+
+        if(!marks[playerId]){
+
+          marks[playerId] =
+            L.circleMarker(
+              [p.lat,p.lng],
+              {
+                radius:8,
+                color:'#fff',
+                weight:2,
+                fillColor:p.color,
+                fillOpacity:1
+              }
+            )
+            .addTo(map)
+            .bindTooltip(
+              p.name,
+              {
+                permanent:true,
+                direction:'top',
+                offset:[0,-6]
+              }
+            );
+
+        }
+
+
+        marks[playerId]
+          .setLatLng(
+            [p.lat,p.lng]
+          );
+
+
+        marks[playerId]
+          .setTooltipContent(
+            `${p.name} (Lv ${p.level})`
+          );
+
+
+        /*
+          IMPORTANT:
+
+          The account server uses the
+          permanent player/account ID,
+          not socket.id.
+        */
+
+        if(
+          myPlayerId &&
+          playerId ===
+          String(myPlayerId) &&
+          !marks.followed
+        ){
+
+          marks.followed = true;
+
+
+          map.setView(
+            [p.lat,p.lng],
+            15
+          );
+
+        }
+
+      });
+
+
+      const ids =
+        new Set(
+          list.map(
+            p => String(p.id)
+          )
+        );
+
+
+      Object.keys(marks).forEach(k => {
+
+        if(
+          k !== 'followed' &&
+          !ids.has(k)
+        ){
+
+          map.removeLayer(
+            marks[k]
+          );
+
+          delete marks[k];
+
+        }
+
+      });
+
+    }
+  );
+
+
+  socket.on(
+    'world',
+    w => {
+
+      const hh =
+        Math.floor(w.h);
+
+
+      $('clock').textContent =
+        '🕐 ' +
+        String(hh)
+          .padStart(2,'0') +
+        ':00';
+
+
+      $('night').style.opacity =
+        (
+          hh >= 21 ||
+          hh < 5
+        )
+          ? .5
+          : (
+              hh >= 19 ||
+              hh < 7
+            )
+              ? .25
+              : 0;
+
+
+      w.npcs.forEach(
+        (n,i) => {
+
+          if(!npcDots[i]){
+
+            npcDots[i] =
+              L.circleMarker(
+                n,
+                {
+                  radius:3,
+                  color:'#374151',
+                  weight:1,
+                  fillColor:'#9ca3af',
+                  fillOpacity:1,
+                  interactive:false
+                }
+              ).addTo(map);
+
+          }
+
+
+          npcDots[i]
+            .setLatLng(
+              [n[0],n[1]]
+            );
+
+        }
+      );
+
+
+      w.buses.forEach(
+        b => {
+
+          if(!busMarks[b[0]]){
+
+            busMarks[b[0]] =
+              L.marker(
+                [b[1],b[2]],
+                {
+                  icon:
+                    L.divIcon({
+                      html:'🚌',
+                      className:'',
+                      iconSize:[24,24],
+                      iconAnchor:[12,12]
+                    }),
+                  interactive:false
+                }
+              ).addTo(map);
+
+          }
+
+
+          busMarks[b[0]]
+            .setLatLng(
+              [b[1],b[2]]
+            );
+
+        }
+      );
+
+    }
+  );
+
+
+  socket.on(
+    'chat',
+    c => {
+
+      log(
+        `${c.name}: ${c.text}`
+      );
+
+    }
+  );
+
+
+  map.on(
+    'click',
+    e => {
+
+      socket.emit(
+        'moveTo',
+        {
+          lat:e.latlng.lat,
+          lng:e.latlng.lng
+        }
+      );
+
+    }
+  );
+
+
+  $('work').onclick = () => {
+
     socket.emit(
-      'moveTo',
-      {
-        lat:e.latlng.lat,
-        lng:e.latlng.lng
-      }
+      'work'
     );
-  });
 
-  $('work').onclick=()=>{
-    socket.emit('work');
   };
 
-  $('ride').onclick=()=>{
-    socket.emit('ride');
+
+  $('ride').onclick = () => {
+
+    socket.emit(
+      'ride'
+    );
+
   };
 
-  $('eat').onclick=()=>{
-    socket.emit('eat');
+
+  $('eat').onclick = () => {
+
+    socket.emit(
+      'eat'
+    );
+
   };
 
-  const send=()=>{
 
-    const value=$('msg').value.trim();
+  const send = () => {
+
+    const value =
+      $('msg').value.trim();
+
 
     if(value){
-      socket.emit('chat',value);
-      $('msg').value='';
+
+      socket.emit(
+        'chat',
+        value
+      );
+
+
+      $('msg').value =
+        '';
+
     }
+
   };
 
-  $('send').onclick=send;
 
-  $('msg').onkeydown=e=>{
-    if(e.key==='Enter'){
-      send();
-    }
-  };
+  $('send').onclick =
+    send;
+
+
+  $('msg').onkeydown =
+    e => {
+
+      if(e.key === 'Enter'){
+
+        send();
+
+      }
+
+    };
+
 }
 
 
@@ -994,34 +2038,55 @@ async function checkExistingLogin(){
     return;
   }
 
+
   try{
 
     const response =
-      await fetch('/api/auth/me',{
-        headers:{
-          Authorization:'Bearer '+authToken
+      await fetch(
+        '/api/auth/me',
+        {
+          headers:{
+            Authorization:
+              'Bearer ' +
+              authToken
+          }
         }
-      });
+      );
+
 
     if(!response.ok){
-      localStorage.removeItem('ibadanLifeToken');
-      authToken='';
+
+      localStorage.removeItem(
+        'ibadanLifeToken'
+      );
+
+      authToken = '';
+
       return;
+
     }
 
-    const data=await response.json();
 
-    startGame(data.player);
+    const data =
+      await response.json();
+
+
+    startGame(
+      data.player
+    );
+
 
   }catch(error){
 
     /*
-      If the account server is not installed yet,
+      If the account server is unavailable,
       leave the login screen visible.
     */
 
   }
+
 }
+
 
 checkExistingLogin();
 
