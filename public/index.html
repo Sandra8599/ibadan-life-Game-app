@@ -1,107 +1,1031 @@
 <!DOCTYPE html>
-<html lang="en"><head>
+<html lang="en">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Ibadan Life</title>
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+
 <style>
-*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:system-ui,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font-family:system-ui,sans-serif}
+
 #map{position:absolute;inset:0}
-#night{position:absolute;inset:0;z-index:900;pointer-events:none;background:#0b1440;opacity:0;transition:opacity 2s}
-#hud{position:absolute;top:env(safe-area-inset-top,0);left:0;right:0;z-index:1000;display:flex;gap:6px;padding:8px;justify-content:center;flex-wrap:wrap}
-.pill{background:#000b;color:#fff;border-radius:99px;padding:6px 12px;font-size:14px}
-#bar{position:absolute;bottom:0;left:0;right:0;z-index:1000;padding:8px 8px calc(8px + env(safe-area-inset-bottom,0));background:#000a}
-#log{max-height:90px;overflow:auto;color:#fff;font-size:13px;margin-bottom:6px}
-#log div{margin:2px 0}.sys{color:#facc15}
-.row{display:flex;gap:6px}
-button,input{font-size:16px;border-radius:8px;border:0;padding:10px}
-button{background:#16a34a;color:#fff;font-weight:600}
-#msg{flex:1;min-width:0}
-#join{position:fixed;inset:0;z-index:2000;overflow:auto;color:#fff;background:linear-gradient(180deg,#052e16 0%,#0f6b3a 45%,#f59e0b 100%);display:flex;flex-direction:column;align-items:center}
-#join:before{content:"";position:absolute;inset:0;opacity:.12;background:repeating-conic-gradient(from 45deg at 50% 50%,#fff 0 12.5%,transparent 0 25%) 0 0/46px 46px}
-.sun{position:absolute;top:21%;left:50%;width:190px;height:190px;margin-left:-95px;border-radius:50%;background:radial-gradient(circle,#fde68a,#f59e0b 55%,transparent 72%);filter:blur(2px);animation:glow 5s ease-in-out infinite}
-@keyframes glow{50%{transform:scale(1.08);opacity:.85}}
-.brand{position:relative;text-align:center;margin-top:7vh;padding:0 16px}
-.brand small{letter-spacing:.35em;font-size:12px;opacity:.9}
-.brand h1{margin:6px 0 2px;font-size:clamp(44px,15vw,76px);line-height:.9;font-weight:900;letter-spacing:-1px;text-shadow:0 4px 0 #052e16,0 10px 24px #0008}
-.brand h1 span{color:#fde68a}
-.brand p{margin:8px 0 0;font-size:15px;opacity:.95}
-.sky{position:relative;width:100%;max-width:520px;margin-top:auto}
-.sky svg{display:block;width:100%}
-.bus{position:absolute;bottom:6px;left:-70px;font-size:34px;animation:drive 14s linear infinite}
-@keyframes drive{to{left:105%}}
-.card{position:relative;width:min(92vw,380px);margin:0 0 18px;padding:18px;border-radius:20px;background:#ffffffee;color:#052e16;box-shadow:0 20px 50px #0006;display:flex;flex-direction:column;gap:10px}
-.card input[type=text]{width:100%;border:2px solid #bbf7d0;border-radius:12px;padding:13px;font-size:17px}
-.card .row2{display:flex;align-items:center;justify-content:space-between;font-weight:600}
-.card input[type=color]{width:56px;height:38px;padding:2px}
-#go{background:linear-gradient(90deg,#16a34a,#f59e0b);font-size:18px;padding:14px;border-radius:14px;box-shadow:0 6px 0 #14532d}
-#go:active{transform:translateY(3px);box-shadow:0 3px 0 #14532d}
-.card small{text-align:center;opacity:.7}
-.wrap{position:relative;display:flex;flex-direction:column;align-items:center;width:100%;margin-top:auto}
-</style></head><body>
-<div id="join"><div class="sun"></div>
-<div class="brand"><small>🇳🇬 THE CITY OF 7 HILLS 🇳🇬</small><h1>IBADAN<br><span>LIFE</span></h1><p>Work. Ride danfo. Make friends. Live your Ibadan story.</p></div>
-<div class="wrap"><div class="sky">
-<svg viewBox="0 0 400 130" preserveAspectRatio="none"><g fill="#052e16"><path d="M0 130V92l25-9 22 8 20-12 24 10 18-8 26 9 22-11 25 10 20-9 28 11 24-8 26 9 22-10 24 9 22-8V130z" opacity=".55"/><rect x="170" y="18" width="16" height="90"/><rect x="164" y="10" width="28" height="12" rx="2"/><rect x="176" y="2" width="4" height="10"/><rect x="215" y="40" width="34" height="70"/><rect x="60" y="62" width="40" height="48"/><path d="M0 130V100l18-6 16 5 20-8 18 7 22-6 20 7 24-6 22 6 18-5 22 6 24-5 20 5 22-5 26 6 24-5 20 4 24-4 20 5 0 31z"/></g><g fill="#fde68a" opacity=".85"><rect x="222" y="48" width="5" height="6"/><rect x="233" y="48" width="5" height="6"/><rect x="222" y="62" width="5" height="6"/><rect x="233" y="62" width="5" height="6"/><rect x="70" y="72" width="5" height="6"/><rect x="84" y="72" width="5" height="6"/><rect x="176" y="40" width="4" height="6"/></g></svg>
-<div class="bus">🚌</div></div>
-<div class="card">
-<input id="name" type="text" placeholder="Choose your nickname" maxlength="16" autocomplete="off">
-<div class="row2"><span>Your colour</span><input id="color" type="color" value="#16a34a"></div>
-<button id="go">Enter Ibadan 🚀</button>
-<small>Tap the map to walk. Reach a marker, then tap Work.</small>
-</div></div></div>
-<div id="map"></div><div id="night"></div>
-<div id="hud"><span class="pill" id="money">₦0</span><span class="pill" id="energy">⚡100</span><span class="pill" id="level">Lv 1</span><span class="pill" id="clock">🕐</span><span class="pill" id="online">1 online</span></div>
-<div id="bar"><div id="log"></div>
-<div class="row"><button id="work">Work</button><button id="ride">Ride ₦200</button><button id="eat">Eat</button><input id="msg" placeholder="Chat..." maxlength="140"><button id="send">Send</button></div></div>
+
+#night{
+  position:absolute;
+  inset:0;
+  z-index:900;
+  pointer-events:none;
+  background:#0b1440;
+  opacity:0;
+  transition:opacity 2s
+}
+
+#hud{
+  position:absolute;
+  top:env(safe-area-inset-top,0);
+  left:0;
+  right:0;
+  z-index:1000;
+  display:flex;
+  gap:6px;
+  padding:8px;
+  justify-content:center;
+  flex-wrap:wrap
+}
+
+.pill{
+  background:#000b;
+  color:#fff;
+  border-radius:99px;
+  padding:6px 12px;
+  font-size:14px
+}
+
+#bar{
+  position:absolute;
+  bottom:0;
+  left:0;
+  right:0;
+  z-index:1000;
+  padding:8px 8px calc(8px + env(safe-area-inset-bottom,0));
+  background:#000a
+}
+
+#log{
+  max-height:90px;
+  overflow:auto;
+  color:#fff;
+  font-size:13px;
+  margin-bottom:6px
+}
+
+#log div{margin:2px 0}
+.sys{color:#facc15}
+
+.row{
+  display:flex;
+  gap:6px
+}
+
+button,input{
+  font-size:16px;
+  border-radius:8px;
+  border:0;
+  padding:10px
+}
+
+button{
+  background:#16a34a;
+  color:#fff;
+  font-weight:600;
+  cursor:pointer
+}
+
+button:disabled{
+  opacity:.6;
+  cursor:not-allowed
+}
+
+#msg{
+  flex:1;
+  min-width:0
+}
+
+/* =========================
+   IBADAN LIFE FRONT PAGE
+   ========================= */
+
+#join{
+  position:fixed;
+  inset:0;
+  z-index:2000;
+  overflow:auto;
+  color:#fff;
+  background:linear-gradient(
+    180deg,
+    #052e16 0%,
+    #0f6b3a 45%,
+    #f59e0b 100%
+  );
+  display:flex;
+  flex-direction:column;
+  align-items:center
+}
+
+#join:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  opacity:.12;
+  background:
+    repeating-conic-gradient(
+      from 45deg at 50% 50%,
+      #fff 0 12.5%,
+      transparent 0 25%
+    ) 0 0/46px 46px
+}
+
+.sun{
+  position:absolute;
+  top:21%;
+  left:50%;
+  width:190px;
+  height:190px;
+  margin-left:-95px;
+  border-radius:50%;
+  background:
+    radial-gradient(
+      circle,
+      #fde68a,
+      #f59e0b 55%,
+      transparent 72%
+    );
+  filter:blur(2px);
+  animation:glow 5s ease-in-out infinite
+}
+
+@keyframes glow{
+  50%{
+    transform:scale(1.08);
+    opacity:.85
+  }
+}
+
+.brand{
+  position:relative;
+  text-align:center;
+  margin-top:7vh;
+  padding:0 16px
+}
+
+.brand small{
+  letter-spacing:.35em;
+  font-size:12px;
+  opacity:.9
+}
+
+.brand h1{
+  margin:6px 0 2px;
+  font-size:clamp(44px,15vw,76px);
+  line-height:.9;
+  font-weight:900;
+  letter-spacing:-1px;
+  text-shadow:
+    0 4px 0 #052e16,
+    0 10px 24px #0008
+}
+
+.brand h1 span{
+  color:#fde68a
+}
+
+.brand p{
+  margin:8px 0 0;
+  font-size:15px;
+  opacity:.95
+}
+
+.sky{
+  position:relative;
+  width:100%;
+  max-width:520px;
+  margin-top:auto
+}
+
+.sky svg{
+  display:block;
+  width:100%
+}
+
+.bus{
+  position:absolute;
+  bottom:6px;
+  left:-70px;
+  font-size:34px;
+  animation:drive 14s linear infinite
+}
+
+@keyframes drive{
+  to{left:105%}
+}
+
+.wrap{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  width:100%;
+  margin-top:auto
+}
+
+/* =========================
+   ACCOUNT CARD
+   ========================= */
+
+.card{
+  position:relative;
+  width:min(92vw,380px);
+  margin:0 0 18px;
+  padding:18px;
+  border-radius:20px;
+  background:#ffffffee;
+  color:#052e16;
+  box-shadow:0 20px 50px #0006;
+  display:flex;
+  flex-direction:column;
+  gap:10px
+}
+
+.card h2{
+  margin:0;
+  text-align:center;
+  font-size:25px
+}
+
+.card .subtitle{
+  margin:-4px 0 4px;
+  text-align:center;
+  font-size:13px;
+  color:#365314
+}
+
+.account-input{
+  width:100%;
+  border:2px solid #bbf7d0;
+  border-radius:12px;
+  padding:13px;
+  font-size:17px;
+  outline:none;
+  background:#fff
+}
+
+.account-input:focus{
+  border-color:#16a34a;
+  box-shadow:0 0 0 3px #16a34a22
+}
+
+#accountButton{
+  background:linear-gradient(90deg,#16a34a,#f59e0b);
+  font-size:18px;
+  padding:14px;
+  border-radius:14px;
+  box-shadow:0 6px 0 #14532d
+}
+
+#accountButton:active{
+  transform:translateY(3px);
+  box-shadow:0 3px 0 #14532d
+}
+
+.googleButton{
+  background:#fff;
+  color:#111827;
+  border:1px solid #d1d5db;
+  box-shadow:0 2px 5px #0002;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  padding:12px
+}
+
+.googleIcon{
+  width:20px;
+  height:20px;
+  font-weight:900;
+  font-size:19px
+}
+
+.divider{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#6b7280;
+  font-size:12px
+}
+
+.divider:before,
+.divider:after{
+  content:"";
+  height:1px;
+  background:#d1d5db;
+  flex:1
+}
+
+.switch{
+  text-align:center;
+  font-size:14px;
+  color:#374151
+}
+
+.switch button{
+  background:none;
+  color:#15803d;
+  padding:0;
+  font-size:14px;
+  font-weight:800
+}
+
+#accountError{
+  min-height:18px;
+  text-align:center;
+  color:#b91c1c;
+  font-size:13px;
+  font-weight:600
+}
+
+.card small{
+  text-align:center;
+  opacity:.7
+}
+
+#gameJoin{
+  display:none
+}
+
+#gameJoin.visible{
+  display:flex
+}
+
+.hidden{
+  display:none!important
+}
+
+@media(max-height:700px){
+  .brand{margin-top:3vh}
+  .brand h1{font-size:50px}
+  .sun{top:15%}
+  .card{margin-bottom:10px;padding:14px}
+}
+
+/* =========================
+   OLD GAME JOIN STYLES
+   ========================= */
+
+#name{
+  width:100%;
+  border:2px solid #bbf7d0;
+  border-radius:12px;
+  padding:13px;
+  font-size:17px
+}
+
+.card .row2{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-weight:600
+}
+
+.card input[type=color]{
+  width:56px;
+  height:38px;
+  padding:2px
+}
+
+#go{
+  background:linear-gradient(90deg,#16a34a,#f59e0b);
+  font-size:18px;
+  padding:14px;
+  border-radius:14px;
+  box-shadow:0 6px 0 #14532d
+}
+</style>
+</head>
+
+<body>
+
+<!-- =========================
+     LOGIN / SIGNUP FRONT PAGE
+     ========================= -->
+
+<div id="join">
+
+  <div class="sun"></div>
+
+  <div class="brand">
+    <small>🇳🇬 THE CITY OF 7 HILLS 🇳🇬</small>
+
+    <h1>
+      IBADAN<br>
+      <span>LIFE</span>
+    </h1>
+
+    <p>
+      Work. Ride danfo. Make friends. Live your Ibadan story.
+    </p>
+  </div>
+
+  <div class="wrap">
+
+    <div class="sky">
+      <svg viewBox="0 0 400 130" preserveAspectRatio="none">
+        <g fill="#052e16">
+          <path d="M0 130V92l25-9 22 8 20-12 24 10 18-8 26 9 22-11 25 10 20-9 28 11 24-8 26 9 22-10 24 9 22-8V130z" opacity=".55"/>
+          <rect x="170" y="18" width="16" height="90"/>
+          <rect x="164" y="10" width="28" height="12" rx="2"/>
+          <rect x="176" y="2" width="4" height="10"/>
+          <rect x="215" y="40" width="34" height="70"/>
+          <rect x="60" y="62" width="40" height="48"/>
+          <path d="M0 130V100l18-6 16 5 20-8 18 7 22-6 20 7 24-6 22 6 18-5 22 6 24-5 20 5 22-5 26 6 24-5 20 4 24-4 20 5 0 31z"/>
+        </g>
+
+        <g fill="#fde68a" opacity=".85">
+          <rect x="222" y="48" width="5" height="6"/>
+          <rect x="233" y="48" width="5" height="6"/>
+          <rect x="222" y="62" width="5" height="6"/>
+          <rect x="233" y="62" width="5" height="6"/>
+          <rect x="70" y="72" width="5" height="6"/>
+          <rect x="84" y="72" width="5" height="6"/>
+          <rect x="176" y="40" width="4" height="6"/>
+        </g>
+      </svg>
+
+      <div class="bus">🚌</div>
+    </div>
+
+    <!-- LOGIN CARD -->
+    <div class="card" id="loginCard">
+
+      <h2 id="accountTitle">Welcome Back</h2>
+
+      <div class="subtitle" id="accountSubtitle">
+        Sign in to continue your Ibadan story
+      </div>
+
+      <input
+        id="username"
+        class="account-input"
+        type="text"
+        placeholder="Username"
+        maxlength="20"
+        autocomplete="username"
+      >
+
+      <input
+        id="password"
+        class="account-input"
+        type="password"
+        placeholder="Password"
+        maxlength="72"
+        autocomplete="current-password"
+      >
+
+      <input
+        id="confirmPassword"
+        class="account-input hidden"
+        type="password"
+        placeholder="Confirm password"
+        maxlength="72"
+        autocomplete="new-password"
+      >
+
+      <div id="accountError"></div>
+
+      <button id="accountButton">
+        Sign In
+      </button>
+
+      <div class="divider">OR</div>
+
+      <button class="googleButton" id="googleButton">
+        <span class="googleIcon">G</span>
+        Continue with Google
+      </button>
+
+      <div class="switch">
+        <span id="switchText">Don't have an account?</span>
+        <button id="switchButton">Create Account</button>
+      </div>
+
+      <small>
+        Your account keeps your Ibadan Life character and progress safe.
+      </small>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- =========================
+     GAME
+     ========================= -->
+
+<div id="map"></div>
+<div id="night"></div>
+
+<div id="hud">
+  <span class="pill" id="money">₦0</span>
+  <span class="pill" id="energy">⚡100</span>
+  <span class="pill" id="level">Lv 1</span>
+  <span class="pill" id="clock">🕐</span>
+  <span class="pill" id="online">1 online</span>
+</div>
+
+<div id="bar">
+  <div id="log"></div>
+
+  <div class="row">
+    <button id="work">Work</button>
+    <button id="ride">Ride ₦200</button>
+    <button id="eat">Eat</button>
+    <input id="msg" placeholder="Chat..." maxlength="140">
+    <button id="send">Send</button>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
+
 <script>
+/* ==========================================
+   ACCOUNT SCREEN
+   ========================================== */
+
+let accountMode = 'login';
+let authToken = localStorage.getItem('ibadanLifeToken') || '';
+
 const $ = id => document.getElementById(id);
-const map = L.map('map').setView([7.3900, 3.9100], 13);
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-const COL = { wealthy: '#7c3aed', middle: '#2563eb', ordinary: '#16a34a', commercial: '#dc2626', older: '#b45309' };
-const socket = io(); const npcDots = [], busMarks = {}; const marks = {};
-function log(t, cls) { const d = document.createElement('div'); if (cls) d.className = cls; d.textContent = t; $('log').appendChild(d); $('log').scrollTop = 1e6; }
+
+function showError(message){
+  $('accountError').textContent = message || '';
+}
+
+function setAccountMode(mode){
+  accountMode = mode;
+  showError('');
+
+  $('username').value = '';
+  $('password').value = '';
+  $('confirmPassword').value = '';
+
+  if(mode === 'signup'){
+    $('accountTitle').textContent = 'Create Account';
+    $('accountSubtitle').textContent =
+      'Create your account and start your Ibadan story';
+
+    $('accountButton').textContent = 'Create Account';
+
+    $('confirmPassword').classList.remove('hidden');
+
+    $('switchText').textContent = 'Already have an account?';
+    $('switchButton').textContent = 'Sign In';
+
+    $('password').autocomplete = 'new-password';
+  }else{
+    $('accountTitle').textContent = 'Welcome Back';
+    $('accountSubtitle').textContent =
+      'Sign in to continue your Ibadan story';
+
+    $('accountButton').textContent = 'Sign In';
+
+    $('confirmPassword').classList.add('hidden');
+
+    $('switchText').textContent = "Don't have an account?";
+    $('switchButton').textContent = 'Create Account';
+
+    $('password').autocomplete = 'current-password';
+  }
+}
+
+$('switchButton').onclick = () => {
+  setAccountMode(accountMode === 'login' ? 'signup' : 'login');
+};
+
+$('accountButton').onclick = async () => {
+
+  const username = $('username').value.trim();
+  const password = $('password').value;
+
+  showError('');
+
+  if(!username){
+    showError('Please enter a username.');
+    return;
+  }
+
+  if(username.length < 3){
+    showError('Username must be at least 3 characters.');
+    return;
+  }
+
+  if(!/^[a-zA-Z0-9_]+$/.test(username)){
+    showError('Username can only use letters, numbers and _.');
+    return;
+  }
+
+  if(!password){
+    showError('Please enter your password.');
+    return;
+  }
+
+  if(password.length < 8){
+    showError('Password must be at least 8 characters.');
+    return;
+  }
+
+  if(accountMode === 'signup'){
+    if($('confirmPassword').value !== password){
+      showError('Passwords do not match.');
+      return;
+    }
+  }
+
+  $('accountButton').disabled = true;
+  $('accountButton').textContent =
+    accountMode === 'signup' ? 'Creating account...' : 'Signing in...';
+
+  try{
+
+    const endpoint =
+      accountMode === 'signup'
+        ? '/api/auth/signup'
+        : '/api/auth/login';
+
+    const response = await fetch(endpoint,{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify({
+        username,
+        password
+      })
+    });
+
+    const data = await response.json();
+
+    if(!response.ok){
+      throw new Error(data.error || 'Unable to continue.');
+    }
+
+    if(!data.token){
+      throw new Error('The server did not return a login token.');
+    }
+
+    authToken = data.token;
+    localStorage.setItem('ibadanLifeToken', authToken);
+
+    startGame(data.player);
+
+  }catch(error){
+
+    showError(error.message || 'Something went wrong.');
+
+    $('accountButton').disabled = false;
+    $('accountButton').textContent =
+      accountMode === 'signup'
+        ? 'Create Account'
+        : 'Sign In';
+  }
+};
+
+/*
+  Google login will be connected to the server
+  after the Google credentials are configured.
+*/
+$('googleButton').onclick = () => {
+  showError('Google login is being connected to the account system.');
+};
+
+
+/* ==========================================
+   GAME
+   ========================================== */
+
+let socket = null;
 let joinData = null;
-$('go').onclick = () => { joinData = { name: $('name').value, color: $('color').value }; socket.emit('join', joinData); $('join').remove(); };
-socket.on('connect', () => { if (joinData) { socket.emit('join', joinData); log('Reconnected', 'sys'); } });
-socket.on('places', ps => ps.forEach(p => {
-  L.circleMarker([p.lat, p.lng], { radius: 9, color: COL[p.type], fillColor: COL[p.type], fillOpacity: .85 }).addTo(map)
-    .bindTooltip(`${p.name} (${p.type}): ${p.job}`);
-}));
-socket.on('me', m => {
-  $('money').textContent = '₦' + m.money.toLocaleString(); $('energy').textContent = '⚡' + m.energy;
-  $('ride').textContent = m.riding ? 'Get off' : 'Ride ₦200'; $('level').textContent = `Lv ${m.level} (${m.xp}/${m.need})`; if (m.note) log(m.note, 'sys');
-});
-socket.on('state', list => {
-  $('online').textContent = list.length + ' online';
-  list.forEach(p => {
-    if (!marks[p.id]) marks[p.id] = L.circleMarker([p.lat, p.lng], { radius: 8, color: '#fff', weight: 2, fillColor: p.color, fillOpacity: 1 })
-      .addTo(map).bindTooltip(p.name, { permanent: true, direction: 'top', offset: [0, -6] });
-    marks[p.id].setLatLng([p.lat, p.lng]).setTooltipContent(`${p.name} (Lv ${p.level})`);
-    if (p.id === socket.id && !marks.followed) { marks.followed = 1; map.setView([p.lat, p.lng], 15); }
+
+function startGame(player){
+
+  if(!player){
+    player = {};
+  }
+
+  $('join').remove();
+
+  joinData = {
+    name: player.name || player.username || 'Player',
+    color: player.color || '#16a34a'
+  };
+
+  socket = io({
+    autoConnect:false,
+    auth:{
+      token:authToken
+    }
   });
-  const ids = new Set(list.map(p => p.id));
-  Object.keys(marks).forEach(k => { if (k !== 'followed' && !ids.has(k)) { map.removeLayer(marks[k]); delete marks[k]; } });
-});
-socket.on('world', w => {
-  const hh = Math.floor(w.h); $('clock').textContent = '🕐 ' + String(hh).padStart(2, '0') + ':00';
-  $('night').style.opacity = (hh >= 21 || hh < 5) ? .5 : (hh >= 19 || hh < 7) ? .25 : 0;
-  w.npcs.forEach((n, i) => {
-    if (!npcDots[i]) npcDots[i] = L.circleMarker(n, { radius: 3, color: '#374151', weight: 1, fillColor: '#9ca3af', fillOpacity: 1, interactive: false }).addTo(map);
-    npcDots[i].setLatLng([n[0], n[1]]);
+
+  setupGameSocket();
+
+  socket.connect();
+}
+
+
+/* ==========================================
+   GAME SOCKET EVENTS
+   ========================================== */
+
+function setupGameSocket(){
+
+  const map = L.map('map').setView([7.3900,3.9100],13);
+
+  L.tileLayer(
+    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+      attribution:'© OpenStreetMap'
+    }
+  ).addTo(map);
+
+  const COL = {
+    wealthy:'#7c3aed',
+    middle:'#2563eb',
+    ordinary:'#16a34a',
+    commercial:'#dc2626',
+    older:'#b45309'
+  };
+
+  const npcDots = [];
+  const busMarks = {};
+  const marks = {};
+
+  function log(t,cls){
+    const d=document.createElement('div');
+
+    if(cls){
+      d.className=cls;
+    }
+
+    d.textContent=t;
+
+    $('log').appendChild(d);
+    $('log').scrollTop=1e6;
+  }
+
+  socket.on('connect',()=>{
+    log('Connected to Ibadan Life.','sys');
   });
-  w.buses.forEach(b => {
-    if (!busMarks[b[0]]) busMarks[b[0]] = L.marker([b[1], b[2]], { icon: L.divIcon({ html: '🚌', className: '', iconSize: [24, 24], iconAnchor: [12, 12] }), interactive: false }).addTo(map);
-    busMarks[b[0]].setLatLng([b[1], b[2]]);
+
+  socket.on('connect_error',(error)=>{
+    log('Connection error: '+(error.message || 'Unable to connect.'),'sys');
   });
-});
-socket.on('chat', c => log(`${c.name}: ${c.text}`));
-map.on('click', e => socket.emit('moveTo', { lat: e.latlng.lat, lng: e.latlng.lng }));
-$('work').onclick = () => socket.emit('work');
-$('ride').onclick = () => socket.emit('ride');
-$('eat').onclick = () => socket.emit('eat');
-const send = () => { if ($('msg').value.trim()) { socket.emit('chat', $('msg').value); $('msg').value = ''; } };
-$('send').onclick = send; $('msg').onkeydown = e => { if (e.key === 'Enter') send(); };
-</script></body></html>
+
+  socket.on('places',ps=>{
+    ps.forEach(p=>{
+      L.circleMarker(
+        [p.lat,p.lng],
+        {
+          radius:9,
+          color:COL[p.type],
+          fillColor:COL[p.type],
+          fillOpacity:.85
+        }
+      )
+      .addTo(map)
+      .bindTooltip(`${p.name} (${p.type}): ${p.job}`);
+    });
+  });
+
+  socket.on('me',m=>{
+
+    if(typeof m.money === 'number'){
+      $('money').textContent =
+        '₦'+m.money.toLocaleString();
+    }
+
+    if(typeof m.energy === 'number'){
+      $('energy').textContent =
+        '⚡'+m.energy;
+    }
+
+    $('ride').textContent =
+      m.riding ? 'Get off' : 'Ride ₦200';
+
+    $('level').textContent =
+      `Lv ${m.level} (${m.xp}/${m.need})`;
+
+    if(m.note){
+      log(m.note,'sys');
+    }
+  });
+
+  socket.on('state',list=>{
+
+    $('online').textContent =
+      list.length+' online';
+
+    list.forEach(p=>{
+
+      if(!marks[p.id]){
+
+        marks[p.id] =
+          L.circleMarker(
+            [p.lat,p.lng],
+            {
+              radius:8,
+              color:'#fff',
+              weight:2,
+              fillColor:p.color,
+              fillOpacity:1
+            }
+          )
+          .addTo(map)
+          .bindTooltip(
+            p.name,
+            {
+              permanent:true,
+              direction:'top',
+              offset:[0,-6]
+            }
+          );
+      }
+
+      marks[p.id]
+        .setLatLng([p.lat,p.lng])
+        .setTooltipContent(
+          `${p.name} (Lv ${p.level})`
+        );
+
+      if(
+        p.id === socket.id &&
+        !marks.followed
+      ){
+        marks.followed=1;
+
+        map.setView(
+          [p.lat,p.lng],
+          15
+        );
+      }
+    });
+
+    const ids =
+      new Set(list.map(p=>p.id));
+
+    Object.keys(marks).forEach(k=>{
+
+      if(
+        k !== 'followed' &&
+        !ids.has(k)
+      ){
+        map.removeLayer(marks[k]);
+        delete marks[k];
+      }
+
+    });
+  });
+
+  socket.on('world',w=>{
+
+    const hh=Math.floor(w.h);
+
+    $('clock').textContent =
+      '🕐 '+String(hh).padStart(2,'0')+':00';
+
+    $('night').style.opacity =
+      (hh>=21 || hh<5)
+        ? .5
+        : (hh>=19 || hh<7)
+          ? .25
+          : 0;
+
+    w.npcs.forEach((n,i)=>{
+
+      if(!npcDots[i]){
+
+        npcDots[i]=
+          L.circleMarker(
+            n,
+            {
+              radius:3,
+              color:'#374151',
+              weight:1,
+              fillColor:'#9ca3af',
+              fillOpacity:1,
+              interactive:false
+            }
+          ).addTo(map);
+      }
+
+      npcDots[i]
+        .setLatLng([n[0],n[1]]);
+    });
+
+    w.buses.forEach(b=>{
+
+      if(!busMarks[b[0]]){
+
+        busMarks[b[0]]=
+          L.marker(
+            [b[1],b[2]],
+            {
+              icon:L.divIcon({
+                html:'🚌',
+                className:'',
+                iconSize:[24,24],
+                iconAnchor:[12,12]
+              }),
+              interactive:false
+            }
+          ).addTo(map);
+      }
+
+      busMarks[b[0]]
+        .setLatLng([b[1],b[2]]);
+    });
+  });
+
+  socket.on('chat',c=>{
+    log(`${c.name}: ${c.text}`);
+  });
+
+  map.on('click',e=>{
+    socket.emit(
+      'moveTo',
+      {
+        lat:e.latlng.lat,
+        lng:e.latlng.lng
+      }
+    );
+  });
+
+  $('work').onclick=()=>{
+    socket.emit('work');
+  };
+
+  $('ride').onclick=()=>{
+    socket.emit('ride');
+  };
+
+  $('eat').onclick=()=>{
+    socket.emit('eat');
+  };
+
+  const send=()=>{
+
+    const value=$('msg').value.trim();
+
+    if(value){
+      socket.emit('chat',value);
+      $('msg').value='';
+    }
+  };
+
+  $('send').onclick=send;
+
+  $('msg').onkeydown=e=>{
+    if(e.key==='Enter'){
+      send();
+    }
+  };
+}
+
+
+/* ==========================================
+   AUTO LOGIN CHECK
+   ========================================== */
+
+async function checkExistingLogin(){
+
+  if(!authToken){
+    return;
+  }
+
+  try{
+
+    const response =
+      await fetch('/api/auth/me',{
+        headers:{
+          Authorization:'Bearer '+authToken
+        }
+      });
+
+    if(!response.ok){
+      localStorage.removeItem('ibadanLifeToken');
+      authToken='';
+      return;
+    }
+
+    const data=await response.json();
+
+    startGame(data.player);
+
+  }catch(error){
+
+    /*
+      If the account server is not installed yet,
+      leave the login screen visible.
+    */
+
+  }
+}
+
+checkExistingLogin();
+
+</script>
+
+</body>
+</html>
