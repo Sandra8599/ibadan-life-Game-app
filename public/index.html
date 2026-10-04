@@ -293,19 +293,14 @@ button:disabled{
   font-family:inherit;
   outline:none;
   background:#fff !important;
-
-  /* Make typed text clearly visible */
   color:#000 !important;
   -webkit-text-fill-color:#000 !important;
   caret-color:#000 !important;
-
-  /* Make sure the phone can select/type normally */
   opacity:1 !important;
   pointer-events:auto !important;
   user-select:text !important;
   -webkit-user-select:text !important;
   touch-action:manipulation;
-
   appearance:none;
   -webkit-appearance:none;
 }
@@ -409,6 +404,10 @@ button:disabled{
   justify-content:center;
   gap:9px;
   padding:12px
+}
+
+.googleButton:hover{
+  background:#f9fafb
 }
 
 .googleIcon{
@@ -661,7 +660,6 @@ button:disabled{
           <path d="M0 130V100l18-6 16 5 20-8 18 7 22-6 20 7 24-6 22 6 18-5 22 6 24-5 20 5 22-5 26 6 24-5 20 4 24-4 20 5 0 31z"/>
 
         </g>
-
 
         <g fill="#fde68a" opacity=".85">
 
@@ -972,6 +970,9 @@ button:disabled{
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
 <script src="/socket.io/socket.io.js"></script>
+
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 
 
 <script>
@@ -1450,14 +1451,6 @@ $('forgotBox').addEventListener(
 );
 
 
-/*
-  This deliberately does NOT pretend to reset
-  someone's password without secure verification.
-
-  The server-side password-recovery system will
-  be connected separately.
-*/
-
 $('sendForgot').onclick = () => {
 
   const username =
@@ -1465,6 +1458,9 @@ $('sendForgot').onclick = () => {
 
 
   if(!username){
+
+    $('forgotMessage').style.color =
+      '#b91c1c';
 
     $('forgotMessage').textContent =
       'Enter your username first.';
@@ -1478,8 +1474,7 @@ $('sendForgot').onclick = () => {
     '#b45309';
 
   $('forgotMessage').textContent =
-    'Secure password recovery needs to be connected to the account server.';
-
+    'Secure password recovery is not connected yet.';
 
 };
 
@@ -1488,13 +1483,251 @@ $('sendForgot').onclick = () => {
    GOOGLE LOGIN
    ========================================== */
 
+let googleClientId = '';
+
+
+async function setupGoogleLogin(){
+
+  try{
+
+    const response =
+      await fetch(
+        '/api/config'
+      );
+
+
+    if(!response.ok){
+
+      throw new Error(
+        'Unable to load Google configuration.'
+      );
+
+    }
+
+
+    const config =
+      await response.json();
+
+
+    googleClientId =
+      config.googleClientId || '';
+
+
+    if(!googleClientId){
+
+      console.error(
+        'GOOGLE_CLIENT_ID was not returned by the server.'
+      );
+
+      return;
+
+    }
+
+
+    const waitForGoogle = () => {
+
+      if(
+        !window.google ||
+        !window.google.accounts ||
+        !window.google.accounts.id
+      ){
+
+        setTimeout(
+          waitForGoogle,
+          300
+        );
+
+        return;
+
+      }
+
+
+      google.accounts.id.initialize({
+
+        client_id:
+          googleClientId,
+
+        callback:
+          handleGoogleCredential,
+
+        auto_select:false,
+
+        cancel_on_tap_outside:true
+
+      });
+
+    };
+
+
+    waitForGoogle();
+
+
+  }catch(error){
+
+    console.error(
+      'Google login setup failed:',
+      error
+    );
+
+  }
+
+}
+
+
+async function handleGoogleCredential(response){
+
+  showError('');
+
+
+  if(
+    !response ||
+    !response.credential
+  ){
+
+    showError(
+      'Google sign-in did not return a valid account.'
+    );
+
+    return;
+
+  }
+
+
+  $('googleButton').disabled =
+    true;
+
+  $('googleButton').textContent =
+    'Signing in with Google...';
+
+
+  try{
+
+    const result =
+      await fetch(
+        '/api/auth/google',
+        {
+          method:'POST',
+
+          headers:{
+            'Content-Type':
+              'application/json'
+          },
+
+          body:JSON.stringify({
+
+            credential:
+              response.credential
+
+          })
+
+        }
+      );
+
+
+    let data;
+
+    try{
+
+      data =
+        await result.json();
+
+    }catch{
+
+      throw new Error(
+        'The server returned an invalid Google-login response.'
+      );
+
+    }
+
+
+    if(!result.ok){
+
+      throw new Error(
+        data.error ||
+        'Google sign-in failed.'
+      );
+
+    }
+
+
+    if(!data.token){
+
+      throw new Error(
+        'Google sign-in did not return a login token.'
+      );
+
+    }
+
+
+    authToken =
+      data.token;
+
+
+    localStorage.setItem(
+      'ibadanLifeToken',
+      authToken
+    );
+
+
+    startGame(
+      data.player
+    );
+
+
+  }catch(error){
+
+    showError(
+      error.message ||
+      'Google sign-in failed.'
+    );
+
+
+    $('googleButton').disabled =
+      false;
+
+
+    $('googleButton').innerHTML =
+      '<span class="googleIcon">G</span> Continue with Google';
+
+  }
+
+}
+
+
 $('googleButton').onclick = () => {
 
-  showError(
-    'Google login is ready for the Google account connection.'
-  );
+  if(!googleClientId){
+
+    showError(
+      'Google login is not configured yet.'
+    );
+
+    return;
+
+  }
+
+
+  if(
+    !window.google ||
+    !window.google.accounts ||
+    !window.google.accounts.id
+  ){
+
+    showError(
+      'Google login is still loading. Please try again.'
+    );
+
+    return;
+
+  }
+
+
+  google.accounts.id.prompt();
 
 };
+
+
+setupGoogleLogin();
 
 
 /* ==========================================
@@ -1538,6 +1771,7 @@ function startGame(player){
 
   socket =
     io({
+
       autoConnect:false,
 
       auth:{
@@ -1781,14 +2015,6 @@ function setupGameSocket(){
             `${p.name} (Lv ${p.level})`
           );
 
-
-        /*
-          IMPORTANT:
-
-          The account server uses the
-          permanent player/account ID,
-          not socket.id.
-        */
 
         if(
           myPlayerId &&
