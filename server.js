@@ -32,9 +32,7 @@ if (!DATABASE_URL) {
   process.exit(1);
 }
 
-if (
-  JWT_SECRET === 'CHANGE_THIS_SECRET_IN_RAILWAY'
-) {
+if (JWT_SECRET === 'CHANGE_THIS_SECRET_IN_RAILWAY') {
   console.warn(
     'WARNING: JWT_SECRET is not configured in Railway.'
   );
@@ -94,12 +92,6 @@ async function initDatabase() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
-
-  /*
-    These ALTER statements make the update safe for an
-    existing PostgreSQL database created by the previous
-    version of the game.
-  */
 
   await pool.query(`
     ALTER TABLE players
@@ -441,6 +433,26 @@ function publicPlayer(player) {
 
 
 /* =========================================================
+   APP CONFIG
+========================================================= */
+
+/*
+  The Google Client ID is safe to send to the browser.
+  The Google Client Secret is NEVER sent to the browser.
+*/
+
+app.get(
+  '/api/config',
+  (req, res) => {
+    res.json({
+      googleClientId:
+        process.env.GOOGLE_CLIENT_ID || ''
+    });
+  }
+);
+
+
+/* =========================================================
    AUTH — SIGN UP
 ========================================================= */
 
@@ -488,12 +500,6 @@ app.post(
             'Passwords do not match.'
         });
       }
-
-      /*
-        Email is optional for compatibility with
-        accounts already created before the email
-        recovery system was added.
-      */
 
       if (
         email &&
@@ -755,11 +761,6 @@ app.post(
           254
         ).toLowerCase();
 
-      /*
-        We deliberately do not reveal whether
-        an account exists.
-      */
-
       if (!username && !email) {
         return res.json({
           message:
@@ -803,14 +804,6 @@ app.post(
       const player =
         result.rows[0];
 
-      /*
-        No email service is assumed here.
-        We generate a secure one-time recovery token
-        and store only its hash.
-
-        The token itself is never stored in PostgreSQL.
-      */
-
       const token =
         createRecoveryToken();
 
@@ -832,14 +825,6 @@ app.post(
           player.id
         ]
       );
-
-      /*
-        If an email provider is configured later,
-        this token can be sent by email.
-
-        For now it is intentionally NOT returned
-        as a public password-reset credential.
-      */
 
       console.log(
         `Password recovery requested for account ${player.username}.`
@@ -1041,12 +1026,6 @@ app.post(
         result.rows[0];
 
       if (!player) {
-        /*
-          If this Google email already belongs
-          to a normal account, connect Google to
-          that account instead of creating a duplicate.
-        */
-
         result =
           await pool.query(
             `
