@@ -107,9 +107,8 @@ button:disabled{
   min-width:0
 }
 
-
 /* =========================
-   IBADAN LIFE FRONT PAGE
+   FRONT PAGE
    ========================= */
 
 #join{
@@ -243,7 +242,6 @@ button:disabled{
   margin-top:auto
 }
 
-
 /* =========================
    ACCOUNT CARD
    ========================= */
@@ -276,9 +274,6 @@ button:disabled{
   font-size:13px;
   color:#365314
 }
-
-
-/* FIXED ACCOUNT INPUTS */
 
 .account-input{
   position:relative;
@@ -316,9 +311,6 @@ button:disabled{
   box-shadow:0 0 0 3px #16a34a22
 }
 
-
-/* PASSWORD BOX */
-
 .passwordBox{
   position:relative;
   z-index:30;
@@ -349,9 +341,6 @@ button:disabled{
   transform:scale(.97)
 }
 
-
-/* FORGOT PASSWORD */
-
 .forgotRow{
   display:flex;
   justify-content:flex-end;
@@ -371,9 +360,6 @@ button:disabled{
   text-decoration:underline
 }
 
-
-/* MAIN ACCOUNT BUTTON */
-
 #accountButton{
   position:relative;
   z-index:30;
@@ -388,9 +374,6 @@ button:disabled{
   transform:translateY(3px);
   box-shadow:0 3px 0 #14532d
 }
-
-
-/* GOOGLE */
 
 .googleButton{
   position:relative;
@@ -417,9 +400,6 @@ button:disabled{
   font-size:19px
 }
 
-
-/* DIVIDER */
-
 .divider{
   display:flex;
   align-items:center;
@@ -436,9 +416,6 @@ button:disabled{
   flex:1
 }
 
-
-/* SWITCH */
-
 .switch{
   text-align:center;
   font-size:14px;
@@ -453,9 +430,6 @@ button:disabled{
   font-weight:800
 }
 
-
-/* ERROR */
-
 #accountError{
   min-height:18px;
   text-align:center;
@@ -469,21 +443,12 @@ button:disabled{
   opacity:.7
 }
 
-#gameJoin{
-  display:none
-}
-
-#gameJoin.visible{
-  display:flex
-}
-
 .hidden{
   display:none!important
 }
 
-
 /* =========================
-   FORGOT PASSWORD MESSAGE
+   FORGOT PASSWORD
    ========================= */
 
 #forgotBox{
@@ -552,7 +517,6 @@ button:disabled{
   color:#111827
 }
 
-
 /* =========================
    MOBILE
    ========================= */
@@ -575,48 +539,13 @@ button:disabled{
     padding:14px
   }
 }
-
-
-/* =========================
-   OLD GAME JOIN STYLES
-   ========================= */
-
-#name{
-  width:100%;
-  border:2px solid #bbf7d0;
-  border-radius:12px;
-  padding:13px;
-  font-size:17px
-}
-
-.card .row2{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  font-weight:600
-}
-
-.card input[type=color]{
-  width:56px;
-  height:38px;
-  padding:2px
-}
-
-#go{
-  background:linear-gradient(90deg,#16a34a,#f59e0b);
-  font-size:18px;
-  padding:14px;
-  border-radius:14px;
-  box-shadow:0 6px 0 #14532d
-}
 </style>
 </head>
 
 <body>
 
-
 <!-- =========================
-     LOGIN / SIGNUP FRONT PAGE
+     LOGIN / SIGNUP
      ========================= -->
 
 <div id="join">
@@ -624,7 +553,6 @@ button:disabled{
   <div class="sun"></div>
 
   <div class="brand">
-
     <small>🇳🇬 THE CITY OF 7 HILLS 🇳🇬</small>
 
     <h1>
@@ -635,9 +563,7 @@ button:disabled{
     <p>
       Work. Ride danfo. Make friends. Live your Ibadan story.
     </p>
-
   </div>
-
 
   <div class="wrap">
 
@@ -665,13 +591,10 @@ button:disabled{
 
           <rect x="222" y="48" width="5" height="6"/>
           <rect x="233" y="48" width="5" height="6"/>
-
           <rect x="222" y="62" width="5" height="6"/>
           <rect x="233" y="62" width="5" height="6"/>
-
           <rect x="70" y="72" width="5" height="6"/>
           <rect x="84" y="72" width="5" height="6"/>
-
           <rect x="176" y="40" width="4" height="6"/>
 
         </g>
@@ -681,9 +604,6 @@ button:disabled{
       <div class="bus">🚌</div>
 
     </div>
-
-
-    <!-- LOGIN CARD -->
 
     <div class="card" id="loginCard">
 
@@ -695,15 +615,12 @@ button:disabled{
         Sign in to continue your Ibadan story
       </div>
 
-
-      <!-- USERNAME -->
-
       <input
         id="username"
         class="account-input"
         type="text"
         placeholder="Username"
-        maxlength="20"
+        maxlength="16"
         autocomplete="username"
         autocapitalize="none"
         autocorrect="off"
@@ -711,8 +628,19 @@ button:disabled{
         inputmode="text"
       >
 
-
-      <!-- PASSWORD -->
+      <!-- NEW: EMAIL FOR SIGNUP -->
+      <input
+        id="email"
+        class="account-input hidden"
+        type="email"
+        placeholder="Email address"
+        maxlength="254"
+        autocomplete="email"
+        autocapitalize="none"
+        autocorrect="off"
+        spellcheck="false"
+        inputmode="email"
+      >
 
       <div class="passwordBox">
 
@@ -737,9 +665,6 @@ button:disabled{
         </button>
 
       </div>
-
-
-      <!-- CONFIRM PASSWORD -->
 
       <div
         class="passwordBox hidden"
@@ -768,9 +693,6 @@ button:disabled{
 
       </div>
 
-
-      <!-- FORGOT PASSWORD -->
-
       <div class="forgotRow" id="forgotRow">
 
         <button
@@ -782,34 +704,24 @@ button:disabled{
 
       </div>
 
-
       <div id="accountError"></div>
-
 
       <button id="accountButton">
         Sign In
       </button>
 
-
       <div class="divider">
         OR
       </div>
-
 
       <button
         class="googleButton"
         id="googleButton"
         type="button"
       >
-
-        <span class="googleIcon">
-          G
-        </span>
-
+        <span class="googleIcon">G</span>
         Continue with Google
-
       </button>
-
 
       <div class="switch">
 
@@ -826,7 +738,6 @@ button:disabled{
 
       </div>
 
-
       <small>
         Your account keeps your Ibadan Life character and progress safe.
       </small>
@@ -837,32 +748,30 @@ button:disabled{
 
 </div>
 
-
 <!-- =========================
-     FORGOT PASSWORD WINDOW
+     FORGOT PASSWORD
      ========================= -->
 
 <div id="forgotBox">
 
   <div class="forgotCard">
 
-    <h2>
-      Forgot Password
-    </h2>
+    <h2>Forgot Password</h2>
 
     <p>
-      Enter your username below. Password recovery will use the secure account-recovery system connected to your Ibadan Life account.
+      Enter the email address connected to your Ibadan Life account.
     </p>
 
     <input
-      id="forgotUsername"
-      type="text"
-      placeholder="Username"
-      maxlength="20"
-      autocomplete="username"
+      id="forgotEmail"
+      type="email"
+      placeholder="Email address"
+      maxlength="254"
+      autocomplete="email"
       autocapitalize="none"
       autocorrect="off"
       spellcheck="false"
+      inputmode="email"
     >
 
     <div
@@ -873,7 +782,6 @@ button:disabled{
         text-align:center;
         font-size:13px;
         font-weight:600;
-        color:#b91c1c;
       "
     ></div>
 
@@ -899,7 +807,6 @@ button:disabled{
 
 </div>
 
-
 <!-- =========================
      GAME
      ========================= -->
@@ -907,7 +814,6 @@ button:disabled{
 <div id="map"></div>
 
 <div id="night"></div>
-
 
 <div id="hud">
 
@@ -923,6 +829,11 @@ button:disabled{
     Lv 1
   </span>
 
+  <!-- BACKGROUND -->
+  <span class="pill" id="background">
+    🎭 Background
+  </span>
+
   <span class="pill" id="clock">
     🕐
   </span>
@@ -932,7 +843,6 @@ button:disabled{
   </span>
 
 </div>
-
 
 <div id="bar">
 
@@ -966,19 +876,14 @@ button:disabled{
 
 </div>
 
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-
 <script src="/socket.io/socket.io.js"></script>
-
-<!-- Google Identity Services -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-
 
 <script>
 
 /* ==========================================
-   ACCOUNT SCREEN
+   GLOBAL
    ========================================== */
 
 let accountMode = 'login';
@@ -988,46 +893,44 @@ let authToken =
 
 let myPlayerId = null;
 
+let socket = null;
+
+let joinData = null;
 
 const $ = id =>
   document.getElementById(id);
 
 
-function showError(message){
+/* ==========================================
+   ERROR
+   ========================================== */
 
+function showError(message){
   $('accountError').textContent =
     message || '';
-
 }
 
 
 /* ==========================================
-   PASSWORD SHOW / HIDE
+   PASSWORD TOGGLE
    ========================================== */
 
 function setupPasswordToggle(inputId,buttonId){
 
-  const input =
-    $(inputId);
-
-  const button =
-    $(buttonId);
+  const input = $(inputId);
+  const button = $(buttonId);
 
   button.onclick = () => {
 
     if(input.type === 'password'){
 
       input.type = 'text';
-
-      button.textContent =
-        'Hide';
+      button.textContent = 'Hide';
 
     }else{
 
       input.type = 'password';
-
-      button.textContent =
-        'Show';
+      button.textContent = 'Show';
 
     }
 
@@ -1036,7 +939,6 @@ function setupPasswordToggle(inputId,buttonId){
   };
 
 }
-
 
 setupPasswordToggle(
   'password',
@@ -1060,20 +962,15 @@ function setAccountMode(mode){
   showError('');
 
   $('username').value = '';
+  $('email').value = '';
   $('password').value = '';
   $('confirmPassword').value = '';
 
-  $('showPassword').textContent =
-    'Show';
+  $('showPassword').textContent = 'Show';
+  $('showConfirmPassword').textContent = 'Show';
 
-  $('showConfirmPassword').textContent =
-    'Show';
-
-  $('password').type =
-    'password';
-
-  $('confirmPassword').type =
-    'password';
+  $('password').type = 'password';
+  $('confirmPassword').type = 'password';
 
 
   if(mode === 'signup'){
@@ -1086,6 +983,9 @@ function setAccountMode(mode){
 
     $('accountButton').textContent =
       'Create Account';
+
+    $('email')
+      .classList.remove('hidden');
 
     $('confirmPasswordBox')
       .classList.remove('hidden');
@@ -1113,6 +1013,9 @@ function setAccountMode(mode){
     $('accountButton').textContent =
       'Sign In';
 
+    $('email')
+      .classList.add('hidden');
+
     $('confirmPasswordBox')
       .classList.add('hidden');
 
@@ -1131,7 +1034,6 @@ function setAccountMode(mode){
   }
 
 }
-
 
 $('switchButton').onclick = () => {
 
@@ -1153,6 +1055,9 @@ async function submitAccount(){
   const username =
     $('username').value.trim();
 
+  const email =
+    $('email').value.trim();
+
   const password =
     $('password').value;
 
@@ -1166,7 +1071,6 @@ async function submitAccount(){
     );
 
     $('username').focus();
-
     return;
   }
 
@@ -1178,7 +1082,6 @@ async function submitAccount(){
     );
 
     $('username').focus();
-
     return;
   }
 
@@ -1190,8 +1093,35 @@ async function submitAccount(){
     );
 
     $('username').focus();
-
     return;
+  }
+
+
+  if(accountMode === 'signup'){
+
+    if(!email){
+
+      showError(
+        'Please enter your email address.'
+      );
+
+      $('email').focus();
+      return;
+    }
+
+
+    if(
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    ){
+
+      showError(
+        'Please enter a valid email address.'
+      );
+
+      $('email').focus();
+      return;
+    }
+
   }
 
 
@@ -1202,7 +1132,6 @@ async function submitAccount(){
     );
 
     $('password').focus();
-
     return;
   }
 
@@ -1214,7 +1143,6 @@ async function submitAccount(){
     );
 
     $('password').focus();
-
     return;
   }
 
@@ -1222,8 +1150,7 @@ async function submitAccount(){
   if(accountMode === 'signup'){
 
     if(
-      $('confirmPassword').value !==
-      password
+      $('confirmPassword').value !== password
     ){
 
       showError(
@@ -1231,15 +1158,13 @@ async function submitAccount(){
       );
 
       $('confirmPassword').focus();
-
       return;
     }
 
   }
 
 
-  $('accountButton').disabled =
-    true;
+  $('accountButton').disabled = true;
 
   $('accountButton').textContent =
     accountMode === 'signup'
@@ -1255,6 +1180,22 @@ async function submitAccount(){
         : '/api/auth/login';
 
 
+    const body = {
+      username,
+      password
+    };
+
+
+    if(accountMode === 'signup'){
+
+      body.email = email;
+
+      body.confirmPassword =
+        $('confirmPassword').value;
+
+    }
+
+
     const response =
       await fetch(
         endpoint,
@@ -1266,10 +1207,7 @@ async function submitAccount(){
               'application/json'
           },
 
-          body:JSON.stringify({
-            username,
-            password
-          })
+          body:JSON.stringify(body)
         }
       );
 
@@ -1278,8 +1216,7 @@ async function submitAccount(){
 
     try{
 
-      data =
-        await response.json();
+      data = await response.json();
 
     }catch{
 
@@ -1331,10 +1268,8 @@ async function submitAccount(){
       'Something went wrong.'
     );
 
-
     $('accountButton').disabled =
       false;
-
 
     $('accountButton').textContent =
       accountMode === 'signup'
@@ -1345,7 +1280,6 @@ async function submitAccount(){
 
 }
 
-
 $('accountButton').onclick =
   submitAccount;
 
@@ -1354,56 +1288,29 @@ $('accountButton').onclick =
    ENTER KEY
    ========================================== */
 
-$('username').addEventListener(
-  'keydown',
-  event => {
+['username','email','password','confirmPassword']
+.forEach(id => {
 
-    if(event.key === 'Enter'){
+  $(id).addEventListener(
+    'keydown',
+    event => {
 
-      event.preventDefault();
+      if(event.key === 'Enter'){
 
-      submitAccount();
+        event.preventDefault();
 
-    }
+        submitAccount();
 
-  }
-);
-
-
-$('password').addEventListener(
-  'keydown',
-  event => {
-
-    if(event.key === 'Enter'){
-
-      event.preventDefault();
-
-      submitAccount();
+      }
 
     }
+  );
 
-  }
-);
-
-
-$('confirmPassword').addEventListener(
-  'keydown',
-  event => {
-
-    if(event.key === 'Enter'){
-
-      event.preventDefault();
-
-      submitAccount();
-
-    }
-
-  }
-);
+});
 
 
 /* ==========================================
-   FORGOT PASSWORD UI
+   FORGOT PASSWORD
    ========================================== */
 
 $('forgotButton').onclick = () => {
@@ -1411,14 +1318,17 @@ $('forgotButton').onclick = () => {
   $('forgotBox')
     .classList.add('visible');
 
-  $('forgotUsername').value =
-    $('username').value.trim();
+  $('forgotEmail').value =
+    $('email').value.trim();
+
+  $('forgotMessage').style.color =
+    '#b91c1c';
 
   $('forgotMessage').textContent =
     '';
 
   setTimeout(
-    () => $('forgotUsername').focus(),
+    () => $('forgotEmail').focus(),
     50
   );
 
@@ -1437,10 +1347,7 @@ $('forgotBox').addEventListener(
   'click',
   event => {
 
-    if(
-      event.target ===
-      $('forgotBox')
-    ){
+    if(event.target === $('forgotBox')){
 
       $('forgotBox')
         .classList.remove('visible');
@@ -1451,32 +1358,126 @@ $('forgotBox').addEventListener(
 );
 
 
-$('sendForgot').onclick = () => {
+$('sendForgot').onclick =
+  async () => {
 
-  const username =
-    $('forgotUsername').value.trim();
+    const email =
+      $('forgotEmail').value.trim();
 
 
-  if(!username){
+    if(!email){
+
+      $('forgotMessage').style.color =
+        '#b91c1c';
+
+      $('forgotMessage').textContent =
+        'Enter your email address first.';
+
+      return;
+
+    }
+
+
+    if(
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    ){
+
+      $('forgotMessage').style.color =
+        '#b91c1c';
+
+      $('forgotMessage').textContent =
+        'Please enter a valid email address.';
+
+      return;
+
+    }
+
+
+    $('sendForgot').disabled = true;
+
+    $('sendForgot').textContent =
+      'Checking...';
 
     $('forgotMessage').style.color =
-      '#b91c1c';
+      '#b45309';
 
     $('forgotMessage').textContent =
-      'Enter your username first.';
-
-    return;
-
-  }
+      'Requesting recovery token...';
 
 
-  $('forgotMessage').style.color =
-    '#b45309';
+    try{
 
-  $('forgotMessage').textContent =
-    'Secure password recovery is not connected yet.';
+      const response =
+        await fetch(
+          '/api/auth/recovery',
+          {
+            method:'POST',
 
-};
+            headers:{
+              'Content-Type':
+                'application/json'
+            },
+
+            body:JSON.stringify({
+              email
+            })
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if(!response.ok){
+
+        throw new Error(
+          data.error ||
+          'Password recovery failed.'
+        );
+
+      }
+
+
+      $('forgotMessage').style.color =
+        '#15803d';
+
+
+      if(data.recoveryToken){
+
+        $('forgotMessage').textContent =
+          'Recovery token: ' +
+          data.recoveryToken;
+
+      }else{
+
+        $('forgotMessage').textContent =
+          data.message ||
+          'Recovery request submitted.';
+
+      }
+
+
+    }catch(error){
+
+      $('forgotMessage').style.color =
+        '#b91c1c';
+
+      $('forgotMessage').textContent =
+        error.message ||
+        'Password recovery failed.';
+
+    }finally{
+
+      $('sendForgot').disabled =
+        false;
+
+      $('sendForgot').textContent =
+        'Continue';
+
+    }
+
+  };
 
 
 /* ==========================================
@@ -1491,9 +1492,7 @@ async function setupGoogleLogin(){
   try{
 
     const response =
-      await fetch(
-        '/api/config'
-      );
+      await fetch('/api/config');
 
 
     if(!response.ok){
@@ -1544,8 +1543,7 @@ async function setupGoogleLogin(){
 
       google.accounts.id.initialize({
 
-        client_id:
-          googleClientId,
+        client_id:googleClientId,
 
         callback:
           handleGoogleCredential,
@@ -1593,8 +1591,7 @@ async function handleGoogleCredential(response){
   }
 
 
-  $('googleButton').disabled =
-    true;
+  $('googleButton').disabled = true;
 
   $('googleButton').textContent =
     'Signing in with Google...';
@@ -1614,30 +1611,15 @@ async function handleGoogleCredential(response){
           },
 
           body:JSON.stringify({
-
             credential:
               response.credential
-
           })
-
         }
       );
 
 
-    let data;
-
-    try{
-
-      data =
-        await result.json();
-
-    }catch{
-
-      throw new Error(
-        'The server returned an invalid Google-login response.'
-      );
-
-    }
+    const data =
+      await result.json();
 
 
     if(!result.ok){
@@ -1731,13 +1713,8 @@ setupGoogleLogin();
 
 
 /* ==========================================
-   GAME START
+   START GAME
    ========================================== */
-
-let socket = null;
-
-let joinData = null;
-
 
 function startGame(player){
 
@@ -1752,7 +1729,12 @@ function startGame(player){
       : null;
 
 
-  $('join').remove();
+  const join =
+    $('join');
+
+  if(join){
+    join.remove();
+  }
 
 
   joinData = {
@@ -1764,20 +1746,26 @@ function startGame(player){
 
     color:
       player.color ||
-      '#16a34a'
+      '#16a34a',
+
+    backgroundType:
+      player.backgroundType ||
+      null,
+
+    backgroundNeighborhood:
+      player.backgroundNeighborhood ||
+      null
 
   };
 
 
   socket =
     io({
-
       autoConnect:false,
 
       auth:{
         token:authToken
       }
-
     });
 
 
@@ -1789,7 +1777,7 @@ function startGame(player){
 
 
 /* ==========================================
-   GAME SOCKET EVENTS
+   GAME SOCKET
    ========================================== */
 
 function setupGameSocket(){
@@ -1856,6 +1844,10 @@ function setupGameSocket(){
   }
 
 
+  /* =========================
+     CONNECTION
+     ========================= */
+
   socket.on(
     'connect',
     () => {
@@ -1886,18 +1878,27 @@ function setupGameSocket(){
   );
 
 
+  /* =========================
+     PLACES
+     ========================= */
+
   socket.on(
     'places',
     ps => {
 
       ps.forEach(p => {
 
+        const color =
+          COL[p.type] ||
+          '#16a34a';
+
+
         L.circleMarker(
           [p.lat,p.lng],
           {
             radius:9,
-            color:COL[p.type],
-            fillColor:COL[p.type],
+            color,
+            fillColor:color,
             fillOpacity:.85
           }
         )
@@ -1912,13 +1913,16 @@ function setupGameSocket(){
   );
 
 
+  /* =========================
+     MY PLAYER
+     ========================= */
+
   socket.on(
     'me',
     m => {
 
       if(
-        typeof m.money ===
-        'number'
+        typeof m.money === 'number'
       ){
 
         $('money').textContent =
@@ -1929,8 +1933,7 @@ function setupGameSocket(){
 
 
       if(
-        typeof m.energy ===
-        'number'
+        typeof m.energy === 'number'
       ){
 
         $('energy').textContent =
@@ -1947,7 +1950,38 @@ function setupGameSocket(){
 
 
       $('level').textContent =
-        `Lv ${m.level} (${m.xp}/${m.need})`;
+        `Lv ${m.level}`;
+
+
+      /* =====================
+         BACKGROUND
+         ===================== */
+
+      if(m.backgroundType){
+
+        const emoji =
+          m.backgroundType === 'Nepo Baby'
+            ? '💎'
+            : '💰';
+
+
+        $('background').textContent =
+          `${emoji} ${m.backgroundType}`;
+
+      }else{
+
+        $('background').textContent =
+          '🎭 Background';
+
+      }
+
+
+      if(m.backgroundNeighborhood){
+
+        $('background').title =
+          `Started in ${m.backgroundNeighborhood}`;
+
+      }
 
 
       if(m.note){
@@ -1962,6 +1996,10 @@ function setupGameSocket(){
     }
   );
 
+
+  /* =========================
+     OTHER PLAYERS
+     ========================= */
 
   socket.on(
     'state',
@@ -2018,8 +2056,7 @@ function setupGameSocket(){
 
         if(
           myPlayerId &&
-          playerId ===
-          String(myPlayerId) &&
+          playerId === String(myPlayerId) &&
           !marks.followed
         ){
 
@@ -2065,49 +2102,81 @@ function setupGameSocket(){
   );
 
 
+  /* =========================
+     WORLD
+     ========================= */
+
   socket.on(
     'world',
     w => {
 
-      const hh =
-        Math.floor(w.h);
+      /* BACKEND USES w.hour */
+
+      const hour =
+        Number(w.hour);
 
 
-      $('clock').textContent =
-        '🕐 ' +
-        String(hh)
-          .padStart(2,'0') +
-        ':00';
+      if(Number.isFinite(hour)){
+
+        const hh =
+          Math.floor(hour);
+
+        const mm =
+          Math.floor(
+            (hour - hh) * 60
+          );
 
 
-      $('night').style.opacity =
-        (
-          hh >= 21 ||
-          hh < 5
-        )
-          ? .5
-          : (
-              hh >= 19 ||
-              hh < 7
-            )
-              ? .25
-              : 0;
+        $('clock').textContent =
+          '🕐 ' +
+          String(hh).padStart(2,'0') +
+          ':' +
+          String(mm).padStart(2,'0');
 
 
-      w.npcs.forEach(
+        $('night').style.opacity =
+          (
+            hh >= 21 ||
+            hh < 5
+          )
+            ? .5
+            : (
+                hh >= 19 ||
+                hh < 7
+              )
+                ? .25
+                : 0;
+
+      }
+
+
+      /* =====================
+         NPCS
+
+         Backend sends:
+         {lat,lng,r}
+         ===================== */
+
+      (w.npcs || []).forEach(
         (n,i) => {
 
           if(!npcDots[i]){
 
             npcDots[i] =
               L.circleMarker(
-                n,
+                [n.lat,n.lng],
                 {
-                  radius:3,
+                  radius:
+                    Number(n.r) || 3,
+
                   color:'#374151',
+
                   weight:1,
+
                   fillColor:'#9ca3af',
+
                   fillOpacity:1,
+
                   interactive:false
                 }
               ).addTo(map);
@@ -2117,29 +2186,46 @@ function setupGameSocket(){
 
           npcDots[i]
             .setLatLng(
-              [n[0],n[1]]
+              [n.lat,n.lng]
             );
 
         }
       );
 
 
-      w.buses.forEach(
+      /* =====================
+         BUSES
+
+         Backend sends:
+         {id,lat,lng}
+         ===================== */
+
+      (w.buses || []).forEach(
         b => {
 
-          if(!busMarks[b[0]]){
+          const busId =
+            String(b.id);
 
-            busMarks[b[0]] =
+
+          if(!busMarks[busId]){
+
+            busMarks[busId] =
               L.marker(
-                [b[1],b[2]],
+                [b.lat,b.lng],
                 {
                   icon:
                     L.divIcon({
                       html:'🚌',
+
                       className:'',
-                      iconSize:[24,24],
-                      iconAnchor:[12,12]
+
+                      iconSize:
+                        [24,24],
+
+                      iconAnchor:
+                        [12,12]
                     }),
+
                   interactive:false
                 }
               ).addTo(map);
@@ -2147,9 +2233,9 @@ function setupGameSocket(){
           }
 
 
-          busMarks[b[0]]
+          busMarks[busId]
             .setLatLng(
-              [b[1],b[2]]
+              [b.lat,b.lng]
             );
 
         }
@@ -2159,17 +2245,25 @@ function setupGameSocket(){
   );
 
 
+  /* =========================
+     CHAT
+     ========================= */
+
   socket.on(
     'chat',
     c => {
 
       log(
-        `${c.name}: ${c.text}`
+        `${c.name}: ${c.message}`
       );
 
     }
   );
 
+
+  /* =========================
+     MAP MOVEMENT
+     ========================= */
 
   map.on(
     'click',
@@ -2187,32 +2281,34 @@ function setupGameSocket(){
   );
 
 
+  /* =========================
+     ACTIONS
+     ========================= */
+
   $('work').onclick = () => {
 
-    socket.emit(
-      'work'
-    );
+    socket.emit('work');
 
   };
 
 
   $('ride').onclick = () => {
 
-    socket.emit(
-      'ride'
-    );
+    socket.emit('ride');
 
   };
 
 
   $('eat').onclick = () => {
 
-    socket.emit(
-      'eat'
-    );
+    socket.emit('eat');
 
   };
 
+
+  /* =========================
+     CHAT SEND
+     ========================= */
 
   const send = () => {
 
@@ -2220,18 +2316,20 @@ function setupGameSocket(){
       $('msg').value.trim();
 
 
-    if(value){
-
-      socket.emit(
-        'chat',
-        value
-      );
-
-
-      $('msg').value =
-        '';
-
+    if(!value){
+      return;
     }
+
+
+    socket.emit(
+      'chat',
+      {
+        message:value
+      }
+    );
+
+
+    $('msg').value = '';
 
   };
 
@@ -2245,6 +2343,8 @@ function setupGameSocket(){
 
       if(e.key === 'Enter'){
 
+        e.preventDefault();
+
         send();
 
       }
@@ -2255,7 +2355,7 @@ function setupGameSocket(){
 
 
 /* ==========================================
-   AUTO LOGIN CHECK
+   AUTO LOGIN
    ========================================== */
 
 async function checkExistingLogin(){
@@ -2304,10 +2404,10 @@ async function checkExistingLogin(){
 
   }catch(error){
 
-    /*
-      If the account server is unavailable,
-      leave the login screen visible.
-    */
+    console.error(
+      'Auto-login failed:',
+      error
+    );
 
   }
 
