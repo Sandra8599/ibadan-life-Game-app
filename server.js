@@ -52,62 +52,23 @@ const googleClient =
 
 
 /* =========================================================
-   GAME BACKGROUNDS
-========================================================= */
-
-/*
-  These are the starting-life backgrounds.
-
-  NEPO BABY
-  - Higher starting money
-  - Starts in a wealthier neighborhood
-
-  LAPO BABY
-  - Lower starting money
-  - Starts in an ordinary / working-class neighborhood
-
-  IMPORTANT:
-  This is only used when creating a NEW account.
-  Existing players are never randomly reassigned.
-*/
+   BACKGROUNDS
+   ========================================================= */
 
 const BACKGROUNDS = {
   nepo: {
     type: 'Nepo Baby',
-
     minMoney: 50000,
-
-    maxMoney: 70000,
-
-    neighborhoods: [
-      'bodija',
-      'jericho',
-      'oluyole',
-      'bashorun'
-    ]
+    maxMoney: 70000
   },
 
   lapo: {
     type: 'Lapo Baby',
-
     minMoney: 5000,
-
-    maxMoney: 10000,
-
-    neighborhoods: [
-      'apata',
-      'eleyele',
-      'monatan',
-      'omiadio',
-      'odoona'
-    ]
+    maxMoney: 10000
   }
 };
 
-
-/*
-  Random integer between min and max, inclusive.
-*/
 function randomInt(min, max) {
   return Math.floor(
     Math.random() *
@@ -115,10 +76,6 @@ function randomInt(min, max) {
   ) + min;
 }
 
-
-/*
-  Select a random item from an array.
-*/
 function randomItem(items) {
   return items[
     Math.floor(
@@ -128,29 +85,864 @@ function randomItem(items) {
   ];
 }
 
+function weightedRandomItem(items, weightFn) {
+  if (!items.length) return null;
 
-/*
-  Background selection is performed ONLY for new accounts.
-*/
+  let total = 0;
+
+  for (const item of items) {
+    const weight = Math.max(
+      0,
+      Number(weightFn(item)) || 0
+    );
+
+    total += weight;
+  }
+
+  if (total <= 0) {
+    return randomItem(items);
+  }
+
+  let roll = Math.random() * total;
+
+  for (const item of items) {
+    const weight = Math.max(
+      0,
+      Number(weightFn(item)) || 0
+    );
+
+    roll -= weight;
+
+    if (roll <= 0) {
+      return item;
+    }
+  }
+
+  return items[items.length - 1];
+}
+
+
+/* =========================================================
+   GAME WORLD TYPES
+   ========================================================= */
+
+const TYPES = {
+  wealthy: {
+    pay: 1.5,
+    npc: 4
+  },
+
+  middle: {
+    pay: 1.2,
+    npc: 5
+  },
+
+  ordinary: {
+    pay: 1,
+    npc: 6
+  },
+
+  commercial: {
+    pay: 1.1,
+    npc: 11
+  },
+
+  older: {
+    pay: 0.9,
+    npc: 7
+  }
+};
+
+
+/* =========================================================
+   IBADAN WORLD
+   =========================================================
+   These are game-world locations used for:
+   - jobs
+   - NPC spawning
+   - danfo routes
+   - player starting locations
+   - map markers
+
+   The coordinates are approximate game-world coordinates.
+   ========================================================= */
+
+const PLACES = [
+
+  /* =========================
+     CENTRAL / OLD IBADAN
+     ========================= */
+
+  {
+    id: 'mokola',
+    name: 'Mokola',
+    type: 'middle',
+    lat: 7.4040,
+    lng: 3.8990,
+    job: 'Bus conductor',
+    pay: 2500,
+    xp: 6,
+    spawn: {
+      nepo: 2,
+      lapo: 2
+    }
+  },
+
+  {
+    id: 'dugbe',
+    name: 'Dugbe Market',
+    type: 'commercial',
+    lat: 7.3890,
+    lng: 3.8830,
+    job: 'Market trader',
+    pay: 3000,
+    xp: 7,
+    spawn: {
+      nepo: 1.5,
+      lapo: 3
+    }
+  },
+
+  {
+    id: 'mapo',
+    name: 'Mapo Hall',
+    type: 'older',
+    lat: 7.3880,
+    lng: 3.8960,
+    job: 'Tour guide',
+    pay: 3700,
+    xp: 9,
+    spawn: {
+      nepo: 1.5,
+      lapo: 2
+    }
+  },
+
+  {
+    id: 'okeado',
+    name: 'Oke-Ado',
+    type: 'older',
+    lat: 7.3800,
+    lng: 3.8900,
+    job: 'Bakery helper',
+    pay: 2800,
+    xp: 6,
+    spawn: {
+      nepo: 1.5,
+      lapo: 2.5
+    }
+  },
+
+  {
+    id: 'cocoa',
+    name: 'Cocoa House',
+    type: 'commercial',
+    lat: 7.3867,
+    lng: 3.8995,
+    job: 'Office assistant',
+    pay: 4200,
+    xp: 10,
+    spawn: {
+      nepo: 2,
+      lapo: 2
+    }
+  },
+
+  {
+    id: 'gate',
+    name: 'Gate',
+    type: 'commercial',
+    lat: 7.3960,
+    lng: 3.9180,
+    job: 'Phone accessories seller',
+    pay: 3200,
+    xp: 8,
+    spawn: {
+      nepo: 1.5,
+      lapo: 3
+    }
+  },
+
+  {
+    id: 'agodi',
+    name: 'Agodi',
+    type: 'middle',
+    lat: 7.4000,
+    lng: 3.9080,
+    job: 'Hospital porter',
+    pay: 3600,
+    xp: 9,
+    spawn: {
+      nepo: 2,
+      lapo: 2
+    }
+  },
+
+  {
+    id: 'agodi_gardens',
+    name: 'Agodi Gardens',
+    type: 'middle',
+    lat: 7.4070,
+    lng: 3.9090,
+    job: 'Park attendant',
+    pay: 3800,
+    xp: 9,
+    spawn: {
+      nepo: 2.5,
+      lapo: 2
+    }
+  },
+
+
+  /* =========================
+     UNIVERSITY / STUDENT AREA
+     ========================= */
+
+  {
+    id: 'ui',
+    name: 'University of Ibadan',
+    type: 'middle',
+    lat: 7.4443,
+    lng: 3.9000,
+    job: 'Campus tutor',
+    pay: 4500,
+    xp: 12,
+    spawn: {
+      nepo: 4,
+      lapo: 4
+    }
+  },
+
+  {
+    id: 'samonda',
+    name: 'Samonda',
+    type: 'middle',
+    lat: 7.4480,
+    lng: 3.9160,
+    job: 'Student food vendor',
+    pay: 3600,
+    xp: 9,
+    spawn: {
+      nepo: 3,
+      lapo: 4
+    }
+  },
+
+  {
+    id: 'agbowo',
+    name: 'Agbowo',
+    type: 'ordinary',
+    lat: 7.4540,
+    lng: 3.9050,
+    job: 'Bookshop assistant',
+    pay: 3300,
+    xp: 8,
+    spawn: {
+      nepo: 2,
+      lapo: 4
+    }
+  },
+
+  {
+    id: 'sasa',
+    name: 'Sasa',
+    type: 'ordinary',
+    lat: 7.4670,
+    lng: 3.9200,
+    job: 'Food seller',
+    pay: 3100,
+    xp: 8,
+    spawn: {
+      nepo: 1.5,
+      lapo: 3
+    }
+  },
+
+  {
+    id: 'orogun',
+    name: 'Orogun',
+    type: 'ordinary',
+    lat: 7.4560,
+    lng: 3.9350,
+    job: 'Delivery rider',
+    pay: 3400,
+    xp: 8,
+    spawn: {
+      nepo: 2,
+      lapo: 3
+    }
+  },
+
+  {
+    id: 'leadcity',
+    name: 'Lead City University',
+    type: 'wealthy',
+    lat: 7.4850,
+    lng: 3.9420,
+    job: 'Campus assistant',
+    pay: 4800,
+    xp: 13,
+    spawn: {
+      nepo: 4,
+      lapo: 3
+    }
+  },
+
+  {
+    id: 'dominican',
+    name: 'Dominican University',
+    type: 'middle',
+    lat: 7.5020,
+    lng: 3.9000,
+    job: 'School assistant',
+    pay: 4500,
+    xp: 12,
+    spawn: {
+      nepo: 3,
+      lapo: 3
+    }
+  },
+
+  {
+    id: 'polyibadan',
+    name: 'The Polytechnic Ibadan',
+    type: 'middle',
+    lat: 7.4050,
+    lng: 3.9700,
+    job: 'Polytechnic tutor',
+    pay: 4400,
+    xp: 12,
+    spawn: {
+      nepo: 3,
+      lapo: 4
+    }
+  },
+
+  {
+    id: 'poly_sango',
+    name: 'Polytechnic / Sango',
+    type: 'commercial',
+    lat: 7.4150,
+    lng: 3.9500,
+    job: 'Student vendor',
+    pay: 3700,
+    xp: 9,
+    spawn: {
+      nepo: 2.5,
+      lapo: 4
+    }
+  },
+
+
+  /* =========================
+     WEST / NORTH-WEST
+     ========================= */
+
+  {
+    id: 'jericho',
+    name: 'Jericho',
+    type: 'wealthy',
+    lat: 7.4150,
+    lng: 3.8950,
+    job: 'Restaurant waiter',
+    pay: 3000,
+    xp: 7,
+    spawn: {
+      nepo: 6,
+      lapo: 1
+    }
+  },
+
+  {
+    id: 'idiishin',
+    name: 'Idi-Ishin',
+    type: 'middle',
+    lat: 7.4210,
+    lng: 3.8750,
+    job: 'Pharmacy assistant',
+    pay: 3900,
+    xp: 10,
+    spawn: {
+      nepo: 3,
+      lapo: 2
+    }
+  },
+
+  {
+    id: 'ologuneru',
+    name: 'Ologuneru',
+    type: 'ordinary',
+    lat: 7.4310,
+    lng: 3.8420,
+    job: 'Shop assistant',
+    pay: 3200,
+    xp: 8,
+    spawn: {
+      nepo: 1.5,
+      lapo: 3
+    }
+  },
+
+  {
+    id: 'eleyele',
+    name: 'Eleyele',
+    type: 'ordinary',
+    lat: 7.4160,
+    lng: 3.8550,
+    job: 'Fish seller',
+    pay: 2900,
+    xp: 7,
+    spawn: {
+      nepo: 1.5,
+      lapo: 3
+    }
+  },
+
+  {
+    id: 'monatan',
+    name: 'Monatan',
+    type: 'ordinary',
+    lat: 7.4080,
+    lng: 3.8440,
+    job: 'Delivery rider',
+    pay: 3200,
+    xp: 8,
+    spawn: {
+      nepo: 1.5,
+      lapo: 3
+    }
+  },
+
+  {
+    id: 'omiadio',
+    name: 'Omi-Adio',
+    type: 'ordinary',
+    lat: 7.3760,
+    lng: 3.8150,
+    job: 'Farm hand',
+    pay: 3000,
+    xp: 8,
+    spawn: {
+      nepo: 1,
+      lapo: 3
+    }
+  },
+
+  {
+    id: 'apete',
+    name: 'Apete',
+    type: 'ordinary',
+    lat: 7.4250,
+    lng: 3.8270,
+    job: 'Building worker',
+    pay: 3400,
+    xp: 8,
+    spawn: {
+      nepo: 2,
+      lapo: 3.5
+    }
+  },
+
+  {
+    id: 'ajibode',
+    name: 'Ajibode',
+    type: 'ordinary',
+    lat: 7.4620,
+    lng: 3.8450,
+    job: 'Farm produce seller',
+    pay: 3200,
+    xp: 8,
+    spawn: {
+      nepo: 1.5,
+      lapo: 3
+    }
+  },
+
+  {
+    id: 'ijokodo',
+    name: 'Ijokodo',
+    type: 'ordinary',
+    lat: 7.4510,
+    lng: 3.8650,
+    job: 'Mechanic assistant',
+    pay: 3500,
+    xp: 9,
+    spawn: {
+      nepo: 1.5,
+      lapo: 3
+    }
+  },
+
+
+  /* =========================
+     BODIJA / NORTH
+     ========================= */
+
+  {
+    id: 'bodija',
+    name: 'Bodija',
+    type: 'wealthy',
+    lat: 7.4300,
+    lng: 3.9100,
+    job: 'Provisions seller',
+    pay: 3500,
+    xp: 8,
+    spawn: {
+      nepo: 7,
+      lapo: 1.5
+    }
+  },
+
+  {
+    id: 'bodijamarket',
+    name: 'Bodija Market',
+    type: 'commercial',
+    lat: 7.4310,
+    lng: 3.9180,
+    job: 'Market trader',
+    pay: 3800,
+    xp: 9,
+    spawn: {
+      nepo: 3,
+      lapo: 4
+    }
+  },
+
+  {
+    id: 'newbodija',
+    name: 'New Bodija',
+    type: 'wealthy',
+    lat: 7.4360,
+    lng: 3.9200,
+    job: 'Estate assistant',
+    pay: 4200,
+    xp: 10,
+    spawn: {
+      nepo: 6,
+      lapo: 1.5
+    }
+  },
+
+  {
+    id: 'sango',
+    name: 'Sango',
+    type: 'middle',
+    lat: 7.4220,
+    lng: 3.9200,
+    job: 'Tailor assistant',
+    pay: 3400,
+    xp: 8,
+    spawn: {
+      nepo: 3,
+      lapo: 3
+    }
+  },
+
+  {
+    id: 'akobo',
+    name: 'Akobo',
+    type: 'ordinary',
+    lat: 7.4350,
+    lng: 3.9650,
+    job: 'Shop attendant',
+    pay: 3300,
+    xp: 8,
+    spawn: {
+      nepo: 3,
+      lapo: 3
+    }
+  },
+
+  {
+    id: 'bashorun',
+    name: 'Bashorun',
+    type: 'wealthy',
+    lat: 7.4180,
+    lng: 3.9380,
+    job: 'Estate caretaker',
+    pay: 3900,
+    xp: 9,
+    spawn: {
+      nepo: 6,
+      lapo: 1.5
+    }
+  },
+
+  {
+    id: 'ojoo',
+    name: 'Ojoo',
+    type: 'commercial',
+    lat: 7.4680,
+    lng: 3.9470,
+    job: 'Transport worker',
+    pay: 3700,
+    xp: 9,
+    spawn: {
+      nepo: 2,
+      lapo: 4
+    }
+  },
+
+
+  /* =========================
+     EAST / SOUTH-EAST
+     ========================= */
+
+  {
+    id: 'iwo',
+    name: 'Iwo Road',
+    type: 'commercial',
+    lat: 7.3930,
+    lng: 3.9420,
+    job: 'Dispatch rider',
+    pay: 3600,
+    xp: 9,
+    spawn: {
+      nepo: 2,
+      lapo: 4
+    }
+  },
+
+  {
+    id: 'newgarage',
+    name: 'New Garage',
+    type: 'commercial',
+    lat: 7.3590,
+    lng: 3.9130,
+    job: 'Park loader',
+    pay: 3300,
+    xp: 8,
+    spawn: {
+      nepo: 2,
+      lapo: 4
+    }
+  },
+
+  {
+    id: 'challenge',
+    name: 'Challenge',
+    type: 'commercial',
+    lat: 7.3470,
+    lng: 3.8780,
+    job: 'Mechanic helper',
+    pay: 3800,
+    xp: 9,
+    spawn: {
+      nepo: 2,
+      lapo: 4
+    }
+  },
+
+  {
+    id: 'ringroad',
+    name: 'Ring Road',
+    type: 'commercial',
+    lat: 7.3620,
+    lng: 3.8760,
+    job: 'Okada rider',
+    pay: 3200,
+    xp: 8,
+    spawn: {
+      nepo: 3,
+      lapo: 4
+    }
+  },
+
+  {
+    id: 'molete',
+    name: 'Molete',
+    type: 'commercial',
+    lat: 7.3690,
+    lng: 3.8870,
+    job: 'Auto parts seller',
+    pay: 3700,
+    xp: 9,
+    spawn: {
+      nepo: 2,
+      lapo: 4
+    }
+  },
+
+  {
+    id: 'odogbo',
+    name: 'Odogbo',
+    type: 'ordinary',
+    lat: 7.3500,
+    lng: 3.9100,
+    job: 'Welder assistant',
+    pay: 3300,
+    xp: 8,
+    spawn: {
+      nepo: 1.5,
+      lapo: 3
+    }
+  },
+
+  {
+    id: 'oluyole',
+    name: 'Oluyole',
+    type: 'wealthy',
+    lat: 7.3560,
+    lng: 3.8800,
+    job: 'Security guard',
+    pay: 4200,
+    xp: 10,
+    spawn: {
+      nepo: 6,
+      lapo: 1.5
+    }
+  },
+
+  {
+    id: 'odoona',
+    name: 'Odo-Ona',
+    type: 'older',
+    lat: 7.3640,
+    lng: 3.8530,
+    job: 'Welder helper',
+    pay: 3100,
+    xp: 8,
+    spawn: {
+      nepo: 1.5,
+      lapo: 3
+    }
+  },
+
+  {
+    id: 'apata',
+    name: 'Apata',
+    type: 'ordinary',
+    lat: 7.3500,
+    lng: 3.8550,
+    job: 'Brick layer',
+    pay: 4000,
+    xp: 10,
+    spawn: {
+      nepo: 1.5,
+      lapo: 3.5
+    }
+  },
+
+
+  /* =========================
+     SOUTH / SOUTH-WEST
+     ========================= */
+
+  {
+    id: 'iyaganku',
+    name: 'Iyaganku',
+    type: 'middle',
+    lat: 7.3740,
+    lng: 3.8830,
+    job: 'Office clerk',
+    pay: 3900,
+    xp: 10,
+    spawn: {
+      nepo: 3,
+      lapo: 2.5
+    }
+  },
+
+  {
+    id: 'palms',
+    name: 'The Palms / Ring Road',
+    type: 'commercial',
+    lat: 7.3560,
+    lng: 3.8690,
+    job: 'Shop assistant',
+    pay: 3800,
+    xp: 9,
+    spawn: {
+      nepo: 3,
+      lapo: 3
+    }
+  },
+
+  {
+    id: 'jericho_gra',
+    name: 'Jericho GRA',
+    type: 'wealthy',
+    lat: 7.4070,
+    lng: 3.8860,
+    job: 'Estate worker',
+    pay: 4300,
+    xp: 10,
+    spawn: {
+      nepo: 7,
+      lapo: 1
+    }
+  }
+];
+
+
+/* =========================================================
+   PLACE INDEX
+   ========================================================= */
+
+const byId =
+  Object.fromEntries(
+    PLACES.map(place => [
+      place.id,
+      place
+    ])
+  );
+
+const START =
+  byId.mokola || PLACES[0];
+
+function backgroundPlace(neighborhood) {
+  return byId[neighborhood] || START;
+}
+
+
+/* =========================================================
+   RANDOM STARTING BACKGROUND
+   =========================================================
+   IMPORTANT:
+   Players are NOT locked to rich or poor areas.
+
+   Every location has both a Nepo and Lapo weight.
+   Premium areas strongly favor Nepo.
+   Student/commercial/ordinary areas give Lapo a higher chance.
+   But BOTH backgrounds can appear throughout Ibadan.
+   ========================================================= */
+
 function createRandomBackground() {
+
   const isNepo =
     Math.random() < 0.5;
 
-  const background =
+  const key =
     isNepo
-      ? BACKGROUNDS.nepo
-      : BACKGROUNDS.lapo;
+      ? 'nepo'
+      : 'lapo';
+
+  const background =
+    BACKGROUNDS[key];
 
   const neighborhood =
-    randomItem(
-      background.neighborhoods
+    weightedRandomItem(
+      PLACES,
+      place => {
+
+        if (
+          place.spawn &&
+          typeof place.spawn[key] === 'number'
+        ) {
+          return place.spawn[key];
+        }
+
+        return 1;
+      }
     );
 
   return {
-    type:
-      background.type,
+    type: background.type,
 
-    neighborhood,
+    neighborhood:
+      neighborhood
+        ? neighborhood.id
+        : START.id,
 
     money:
       randomInt(
@@ -163,44 +955,31 @@ function createRandomBackground() {
 
 /* =========================================================
    DATABASE
-========================================================= */
+   ========================================================= */
 
 async function initDatabase() {
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS players (
       id BIGSERIAL PRIMARY KEY,
-
       username VARCHAR(16) UNIQUE NOT NULL,
-
       password_hash TEXT,
-
       google_id TEXT UNIQUE,
-
       email TEXT,
-
       recovery_token_hash TEXT,
-
       recovery_expires_at TIMESTAMPTZ,
-
-      name VARCHAR(16) NOT NULL,
-
-      color VARCHAR(7) NOT NULL DEFAULT '#16a34a',
-
-      money BIGINT NOT NULL DEFAULT 20000,
-
-      energy INTEGER NOT NULL DEFAULT 100,
-
-      xp INTEGER NOT NULL DEFAULT 0,
-
-      level INTEGER NOT NULL DEFAULT 1,
-
+      name VARCHAR(16),
+      color VARCHAR(7) DEFAULT '#16a34a',
+      money BIGINT DEFAULT 20000,
+      energy INTEGER DEFAULT 100,
+      xp INTEGER DEFAULT 0,
+      level INTEGER DEFAULT 1,
       lat DOUBLE PRECISION,
-
       lng DOUBLE PRECISION,
-
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      background_type TEXT,
+      background_neighborhood TEXT,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
 
@@ -219,13 +998,6 @@ async function initDatabase() {
     ADD COLUMN IF NOT EXISTS recovery_expires_at TIMESTAMPTZ
   `);
 
-  /*
-    NEW BACKGROUND COLUMNS
-
-    Existing players keep these as NULL.
-    New accounts receive values during INSERT.
-  */
-
   await pool.query(`
     ALTER TABLE players
     ADD COLUMN IF NOT EXISTS background_type TEXT
@@ -236,165 +1008,93 @@ async function initDatabase() {
     ADD COLUMN IF NOT EXISTS background_neighborhood TEXT
   `);
 
-  await pool.query(`
-    CREATE INDEX IF NOT EXISTS
-    players_email_lower_idx
-    ON players (LOWER(email))
-  `);
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS sessions (
       id BIGSERIAL PRIMARY KEY,
-
-      player_id BIGINT NOT NULL
-        REFERENCES players(id)
-        ON DELETE CASCADE,
-
-      token_id TEXT UNIQUE NOT NULL,
-
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-      last_used_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      player_id BIGINT REFERENCES players(id) ON DELETE CASCADE,
+      token_hash TEXT,
+      created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
+
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS friendships (
       id BIGSERIAL PRIMARY KEY,
-
-      requester_id BIGINT NOT NULL
-        REFERENCES players(id)
-        ON DELETE CASCADE,
-
-      receiver_id BIGINT NOT NULL
-        REFERENCES players(id)
-        ON DELETE CASCADE,
-
-      status VARCHAR(20) NOT NULL DEFAULT 'pending',
-
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-      UNIQUE(requester_id, receiver_id)
+      requester_id BIGINT REFERENCES players(id) ON DELETE CASCADE,
+      receiver_id BIGINT REFERENCES players(id) ON DELETE CASCADE,
+      status TEXT DEFAULT 'pending',
+      created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
+
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS messages (
       id BIGSERIAL PRIMARY KEY,
-
-      sender_id BIGINT NOT NULL
-        REFERENCES players(id)
-        ON DELETE CASCADE,
-
-      receiver_id BIGINT NOT NULL
-        REFERENCES players(id)
-        ON DELETE CASCADE,
-
-      text TEXT NOT NULL,
-
-      read_at TIMESTAMPTZ,
-
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      sender_id BIGINT REFERENCES players(id) ON DELETE CASCADE,
+      receiver_id BIGINT REFERENCES players(id) ON DELETE CASCADE,
+      message TEXT,
+      created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
+
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS money_transactions (
       id BIGSERIAL PRIMARY KEY,
-
-      sender_id BIGINT
-        REFERENCES players(id)
-        ON DELETE SET NULL,
-
-      receiver_id BIGINT
-        REFERENCES players(id)
-        ON DELETE SET NULL,
-
-      amount BIGINT NOT NULL,
-
-      type VARCHAR(30) NOT NULL,
-
-      note TEXT,
-
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      player_id BIGINT REFERENCES players(id) ON DELETE CASCADE,
+      amount BIGINT,
+      reason TEXT,
+      created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
+
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS money_requests (
       id BIGSERIAL PRIMARY KEY,
-
-      requester_id BIGINT NOT NULL
-        REFERENCES players(id)
-        ON DELETE CASCADE,
-
-      requested_from_id BIGINT NOT NULL
-        REFERENCES players(id)
-        ON DELETE CASCADE,
-
-      amount BIGINT NOT NULL,
-
-      note TEXT,
-
-      status VARCHAR(20) NOT NULL DEFAULT 'pending',
-
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      requester_id BIGINT REFERENCES players(id) ON DELETE CASCADE,
+      receiver_id BIGINT REFERENCES players(id) ON DELETE CASCADE,
+      amount BIGINT,
+      status TEXT DEFAULT 'pending',
+      created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
+
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS inventory (
       id BIGSERIAL PRIMARY KEY,
-
-      player_id BIGINT NOT NULL
-        REFERENCES players(id)
-        ON DELETE CASCADE,
-
-      item_key VARCHAR(100) NOT NULL,
-
-      quantity INTEGER NOT NULL DEFAULT 1,
-
-      UNIQUE(player_id, item_key)
+      player_id BIGINT REFERENCES players(id) ON DELETE CASCADE,
+      item_name TEXT,
+      quantity INTEGER DEFAULT 1,
+      created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
+
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS properties (
       id BIGSERIAL PRIMARY KEY,
-
-      owner_id BIGINT
-        REFERENCES players(id)
-        ON DELETE SET NULL,
-
-      property_key VARCHAR(100) UNIQUE NOT NULL,
-
-      property_type VARCHAR(30) NOT NULL,
-
-      name VARCHAR(150) NOT NULL,
-
-      price BIGINT NOT NULL DEFAULT 0,
-
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      player_id BIGINT REFERENCES players(id) ON DELETE CASCADE,
+      property_name TEXT,
+      price BIGINT,
+      lat DOUBLE PRECISION,
+      lng DOUBLE PRECISION,
+      created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
+
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS vehicles (
       id BIGSERIAL PRIMARY KEY,
-
-      owner_id BIGINT
-        REFERENCES players(id)
-        ON DELETE SET NULL,
-
-      vehicle_key VARCHAR(100) UNIQUE NOT NULL,
-
-      vehicle_type VARCHAR(30) NOT NULL,
-
-      name VARCHAR(150) NOT NULL,
-
-      price BIGINT NOT NULL DEFAULT 0,
-
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      player_id BIGINT REFERENCES players(id) ON DELETE CASCADE,
+      vehicle_name TEXT,
+      price BIGINT,
+      created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
 
@@ -404,7 +1104,7 @@ async function initDatabase() {
 
 /* =========================================================
    HELPERS
-========================================================= */
+   ========================================================= */
 
 function clean(value, maxLength) {
   return String(value || '')
@@ -414,7 +1114,9 @@ function clean(value, maxLength) {
 }
 
 function validUsername(username) {
-  return /^[A-Za-z0-9_]{3,16}$/.test(username);
+  return /^[A-Za-z0-9_]{3,16}$/.test(
+    username
+  );
 }
 
 function validPassword(password) {
@@ -445,7 +1147,9 @@ function hashRecoveryToken(token) {
 }
 
 function createRecoveryToken() {
-  return crypto.randomBytes(32).toString('hex');
+  return crypto
+    .randomBytes(32)
+    .toString('hex');
 }
 
 function createToken(player) {
@@ -461,103 +1165,73 @@ function createToken(player) {
   );
 }
 
+
+/* =========================================================
+   PLAYER DATABASE FUNCTIONS
+   ========================================================= */
+
 async function getPlayerById(id) {
-  const result = await pool.query(
-    `
-    SELECT
-      id,
-      username,
-      password_hash,
-      google_id,
-      email,
-      name,
-      color,
-      money,
-      energy,
-      xp,
-      level,
-      lat,
-      lng,
-      background_type,
-      background_neighborhood
-    FROM players
-    WHERE id = $1
-    `,
-    [id]
-  );
+
+  const result =
+    await pool.query(
+      `
+      SELECT
+        id,
+        username,
+        password_hash,
+        google_id,
+        email,
+        name,
+        color,
+        money,
+        energy,
+        xp,
+        level,
+        lat,
+        lng,
+        background_type,
+        background_neighborhood
+      FROM players
+      WHERE id = $1
+      `,
+      [id]
+    );
 
   return result.rows[0] || null;
 }
 
-async function authFromToken(token) {
-  if (!token) return null;
-
-  try {
-    const decoded = jwt.verify(
-      token,
-      JWT_SECRET
-    );
-
-    return await getPlayerById(decoded.sub);
-  } catch {
-    return null;
-  }
-}
-
-function authMiddleware(req, res, next) {
-  const header =
-    req.headers.authorization || '';
-
-  if (!header.startsWith('Bearer ')) {
-    return res.status(401).json({
-      error: 'Authentication required.'
-    });
-  }
-
-  authFromToken(header.slice(7))
-    .then(player => {
-      if (!player) {
-        return res.status(401).json({
-          error: 'Invalid or expired login.'
-        });
-      }
-
-      req.player = player;
-      next();
-    })
-    .catch(() => {
-      res.status(500).json({
-        error: 'Authentication error.'
-      });
-    });
-}
-
-
-/* =========================================================
-   PUBLIC PLAYER
-========================================================= */
 
 function publicPlayer(player) {
+
   return {
     id: String(player.id),
 
-    username: player.username,
+    username:
+      player.username,
 
-    name: player.name,
+    name:
+      player.name,
 
-    color: player.color,
+    color:
+      player.color,
 
-    money: Number(player.money),
+    money:
+      Number(player.money),
 
-    energy: Number(player.energy),
+    energy:
+      Number(player.energy),
 
-    xp: Number(player.xp),
+    xp:
+      Number(player.xp),
 
-    level: Number(player.level),
+    level:
+      Number(player.level),
 
-    lat: player.lat,
+    lat:
+      player.lat,
 
-    lng: player.lng,
+    lng:
+      player.lng,
 
     backgroundType:
       player.background_type || null,
@@ -568,349 +1242,146 @@ function publicPlayer(player) {
 }
 
 
-/* =========================================================
-   APP CONFIG
-========================================================= */
+async function savePlayer(player) {
 
-/*
-  The Google Client ID is safe to send to the browser.
-  The Google Client Secret is NEVER sent to the browser.
-*/
-
-app.get(
-  '/api/config',
-  (req, res) => {
-    res.json({
-      googleClientId:
-        process.env.GOOGLE_CLIENT_ID || ''
-    });
-  }
-);
-
-
-/* =========================================================
-   GAME WORLD
-========================================================= */
-
-const TYPES = {
-  wealthy: {
-    pay: 1.5,
-    npc: 3
-  },
-
-  middle: {
-    pay: 1.2,
-    npc: 4
-  },
-
-  ordinary: {
-    pay: 1,
-    npc: 5
-  },
-
-  commercial: {
-    pay: 1.1,
-    npc: 10
-  },
-
-  older: {
-    pay: 0.9,
-    npc: 6
-  }
-};
-
-const PLACES = [
-  {
-    id: 'mokola',
-    name: 'Mokola',
-    type: 'middle',
-    lat: 7.4040,
-    lng: 3.8990,
-    job: 'Bus conductor',
-    pay: 2500,
-    xp: 6
-  },
-
-  {
-    id: 'dugbe',
-    name: 'Dugbe Market',
-    type: 'commercial',
-    lat: 7.3890,
-    lng: 3.8830,
-    job: 'Market trader',
-    pay: 3000,
-    xp: 7
-  },
-
-  {
-    id: 'bodija',
-    name: 'Bodija',
-    type: 'wealthy',
-    lat: 7.4300,
-    lng: 3.9100,
-    job: 'Provisions seller',
-    pay: 3500,
-    xp: 8
-  },
-
-  {
-    id: 'ui',
-    name: 'University of Ibadan',
-    type: 'middle',
-    lat: 7.4443,
-    lng: 3.9000,
-    job: 'Campus tutor',
-    pay: 4500,
-    xp: 12
-  },
-
-  {
-    id: 'ringroad',
-    name: 'Ring Road',
-    type: 'commercial',
-    lat: 7.3620,
-    lng: 3.8760,
-    job: 'Okada rider',
-    pay: 3200,
-    xp: 8
-  },
-
-  {
-    id: 'challenge',
-    name: 'Challenge',
-    type: 'commercial',
-    lat: 7.3470,
-    lng: 3.8780,
-    job: 'Mechanic helper',
-    pay: 3800,
-    xp: 9
-  },
-
-  {
-    id: 'jericho',
-    name: 'Jericho',
-    type: 'wealthy',
-    lat: 7.4150,
-    lng: 3.8950,
-    job: 'Restaurant waiter',
-    pay: 3000,
-    xp: 7
-  },
-
-  {
-    id: 'iwo',
-    name: 'Iwo Road',
-    type: 'commercial',
-    lat: 7.3930,
-    lng: 3.9420,
-    job: 'Dispatch rider',
-    pay: 3600,
-    xp: 9
-  },
-
-  {
-    id: 'apata',
-    name: 'Apata',
-    type: 'ordinary',
-    lat: 7.3500,
-    lng: 3.8550,
-    job: 'Brick layer',
-    pay: 4000,
-    xp: 10
-  },
-
-  {
-    id: 'akobo',
-    name: 'Akobo',
-    type: 'ordinary',
-    lat: 7.4350,
-    lng: 3.9650,
-    job: 'Shop attendant',
-    pay: 3300,
-    xp: 8
-  },
-
-  {
-    id: 'sango',
-    name: 'Sango',
-    type: 'middle',
-    lat: 7.4220,
-    lng: 3.9200,
-    job: 'Tailor assistant',
-    pay: 3400,
-    xp: 8
-  },
-
-  {
-    id: 'mapo',
-    name: 'Mapo Hall',
-    type: 'older',
-    lat: 7.3880,
-    lng: 3.8960,
-    job: 'Tour guide',
-    pay: 3700,
-    xp: 9
-  },
-
-  {
-    id: 'okeado',
-    name: 'Oke-Ado',
-    type: 'older',
-    lat: 7.3800,
-    lng: 3.8900,
-    job: 'Bakery helper',
-    pay: 2800,
-    xp: 6
-  },
-
-  {
-    id: 'oluyole',
-    name: 'Oluyole',
-    type: 'wealthy',
-    lat: 7.3560,
-    lng: 3.8800,
-    job: 'Security guard',
-    pay: 4200,
-    xp: 10
-  },
-
-  {
-    id: 'agodi',
-    name: 'Agodi',
-    type: 'middle',
-    lat: 7.4000,
-    lng: 3.9080,
-    job: 'Hospital porter',
-    pay: 3600,
-    xp: 9
-  },
-
-  {
-    id: 'bashorun',
-    name: 'Bashorun',
-    type: 'wealthy',
-    lat: 7.4180,
-    lng: 3.9380,
-    job: 'Estate caretaker',
-    pay: 3900,
-    xp: 9
-  },
-
-  {
-    id: 'odoona',
-    name: 'Odo-Ona',
-    type: 'older',
-    lat: 7.3640,
-    lng: 3.8530,
-    job: 'Welder helper',
-    pay: 3100,
-    xp: 8
-  },
-
-  {
-    id: 'newgarage',
-    name: 'New Garage',
-    type: 'commercial',
-    lat: 7.3590,
-    lng: 3.9130,
-    job: 'Park loader',
-    pay: 3300,
-    xp: 8
-  },
-
-  {
-    id: 'eleyele',
-    name: 'Eleyele',
-    type: 'ordinary',
-    lat: 7.4160,
-    lng: 3.8550,
-    job: 'Fish seller',
-    pay: 2900,
-    xp: 7
-  },
-
-  {
-    id: 'monatan',
-    name: 'Monatan',
-    type: 'ordinary',
-    lat: 7.4080,
-    lng: 3.8440,
-    job: 'Delivery rider',
-    pay: 3200,
-    xp: 8
-  },
-
-  {
-    id: 'omiadio',
-    name: 'Omi-Adio',
-    type: 'ordinary',
-    lat: 7.3760,
-    lng: 3.8150,
-    job: 'Farm hand',
-    pay: 3000,
-    xp: 8
-  }
-];
-
-const START = PLACES[0];
-
-const byId =
-  Object.fromEntries(
-    PLACES.map(p => [
-      p.id,
-      p
-    ])
+  await pool.query(
+    `
+    UPDATE players
+    SET
+      name = $1,
+      color = $2,
+      money = $3,
+      energy = $4,
+      xp = $5,
+      level = $6,
+      lat = $7,
+      lng = $8,
+      updated_at = NOW()
+    WHERE id = $9
+    `,
+    [
+      player.name,
+      player.color,
+      player.money,
+      player.energy,
+      player.xp,
+      player.level,
+      player.lat,
+      player.lng,
+      player.id
+    ]
   );
-
-
-/*
-  Find the actual PLACE object for a background
-  neighborhood.
-*/
-function backgroundPlace(neighborhood) {
-  return byId[neighborhood] || START;
 }
 
 
 /* =========================================================
-   AUTH — SIGN UP
-========================================================= */
+   AUTH MIDDLEWARE
+   ========================================================= */
+
+async function authMiddleware(
+  req,
+  res,
+  next
+) {
+
+  try {
+
+    const header =
+      req.headers.authorization || '';
+
+    const token =
+      header.startsWith('Bearer ')
+        ? header.slice(7)
+        : null;
+
+    if (!token) {
+      return res.status(401).json({
+        error: 'Authentication required.'
+      });
+    }
+
+    const decoded =
+      jwt.verify(
+        token,
+        JWT_SECRET
+      );
+
+    const player =
+      await getPlayerById(
+        decoded.sub
+      );
+
+    if (!player) {
+      return res.status(401).json({
+        error: 'Player not found.'
+      });
+    }
+
+    req.player = player;
+
+    next();
+
+  } catch (err) {
+
+    return res.status(401).json({
+      error: 'Invalid or expired token.'
+    });
+  }
+}
+
+
+/* =========================================================
+   SIGNUP
+   ========================================================= */
 
 app.post(
   '/api/auth/signup',
   async (req, res) => {
+
     try {
-      const username = clean(
-        req.body?.username,
-        16
-      );
+
+      const username =
+        clean(
+          req.body.username,
+          16
+        );
 
       const password =
-        req.body?.password;
+        req.body.password;
 
       const confirmPassword =
-        req.body?.confirmPassword;
+        req.body.confirmPassword;
 
       const email =
-        clean(req.body?.email, 254)
-          .toLowerCase();
+        clean(
+          req.body.email,
+          254
+        );
+
+      const name =
+        clean(
+          req.body.name || username,
+          16
+        );
 
       const color =
-        validColor(req.body?.color)
-          ? req.body.color
-          : '#16a34a';
+        clean(
+          req.body.color ||
+            '#16a34a',
+          7
+        );
 
       if (!validUsername(username)) {
         return res.status(400).json({
           error:
-            'Username must be 3-16 characters using letters, numbers, or _.'
+            'Username must be 3-16 characters and use only letters, numbers, or _.'
         });
       }
 
       if (!validPassword(password)) {
         return res.status(400).json({
           error:
-            'Password must be at least 6 characters.'
+            'Password must be 6-100 characters.'
         });
       }
 
@@ -927,9 +1398,17 @@ app.post(
       ) {
         return res.status(400).json({
           error:
-            'Please enter a valid email address.'
+            'Invalid email address.'
         });
       }
+
+      if (!validColor(color)) {
+        return res.status(400).json({
+          error:
+            'Invalid player color.'
+        });
+      }
+
 
       const existing =
         await pool.query(
@@ -937,40 +1416,25 @@ app.post(
           SELECT id
           FROM players
           WHERE LOWER(username) = LOWER($1)
+             OR (
+               $2 <> ''
+               AND LOWER(email) = LOWER($2)
+             )
+          LIMIT 1
           `,
-          [username]
+          [
+            username,
+            email
+          ]
         );
 
-      if (existing.rowCount) {
+      if (existing.rows.length) {
         return res.status(409).json({
           error:
-            'That username is already taken.'
+            'Username or email already exists.'
         });
       }
 
-      if (email) {
-        const emailExists =
-          await pool.query(
-            `
-            SELECT id
-            FROM players
-            WHERE LOWER(email) = LOWER($1)
-            `,
-            [email]
-          );
-
-        if (emailExists.rowCount) {
-          return res.status(409).json({
-            error:
-              'That email is already connected to an account.'
-          });
-        }
-      }
-
-      /*
-        NEW ACCOUNT:
-        Choose the background exactly once.
-      */
 
       const background =
         createRandomBackground();
@@ -986,11 +1450,11 @@ app.post(
           12
         );
 
+
       const result =
         await pool.query(
           `
-          INSERT INTO players
-          (
+          INSERT INTO players (
             username,
             password_hash,
             email,
@@ -1005,58 +1469,27 @@ app.post(
             background_type,
             background_neighborhood
           )
-          VALUES
-          (
-            $1,
-            $2,
-            NULLIF($3, ''),
-            $4,
-            $5,
-            $6,
-            100,
-            0,
-            1,
-            $7,
-            $8,
-            $9,
-            $10
+          VALUES (
+            $1,$2,$3,$4,$5,
+            $6,100,0,1,
+            $7,$8,$9,$10
           )
-          RETURNING
-            id,
-            username,
-            name,
-            color,
-            money,
-            energy,
-            xp,
-            level,
-            lat,
-            lng,
-            background_type,
-            background_neighborhood
+          RETURNING *
           `,
           [
             username,
-
             passwordHash,
-
-            email,
-
-            username,
-
+            email || null,
+            name || username,
             color,
-
             background.money,
-
             startingPlace.lat,
-
             startingPlace.lng,
-
             background.type,
-
             background.neighborhood
           ]
         );
+
 
       const player =
         result.rows[0];
@@ -1064,19 +1497,31 @@ app.post(
       const token =
         createToken(player);
 
-      res.json({
+      return res.json({
         token,
-
         player:
-          publicPlayer(player)
+          publicPlayer(player),
+
+        background: {
+          type:
+            background.type,
+
+          neighborhood:
+            startingPlace.name,
+
+          money:
+            background.money
+        }
       });
+
     } catch (err) {
+
       console.error(
         'Signup error:',
         err
       );
 
-      res.status(500).json({
+      return res.status(500).json({
         error:
           'Could not create account.'
       });
@@ -1086,28 +1531,23 @@ app.post(
 
 
 /* =========================================================
-   AUTH — LOGIN
-========================================================= */
+   LOGIN
+   ========================================================= */
 
 app.post(
   '/api/auth/login',
   async (req, res) => {
+
     try {
+
       const username =
         clean(
-          req.body?.username,
+          req.body.username,
           16
         );
 
       const password =
-        req.body?.password;
-
-      if (!username || !password) {
-        return res.status(400).json({
-          error:
-            'Enter your username and password.'
-        });
-      }
+        req.body.password;
 
       const result =
         await pool.query(
@@ -1115,6 +1555,7 @@ app.post(
           SELECT *
           FROM players
           WHERE LOWER(username) = LOWER($1)
+          LIMIT 1
           `,
           [username]
         );
@@ -1128,50 +1569,42 @@ app.post(
       ) {
         return res.status(401).json({
           error:
-            'Incorrect username or password.'
+            'Invalid username or password.'
         });
       }
 
-      const correct =
+      const valid =
         await bcrypt.compare(
           password,
           player.password_hash
         );
 
-      if (!correct) {
+      if (!valid) {
         return res.status(401).json({
           error:
-            'Incorrect username or password.'
+            'Invalid username or password.'
         });
       }
-
-      await pool.query(
-        `
-        UPDATE players
-        SET updated_at = NOW()
-        WHERE id = $1
-        `,
-        [player.id]
-      );
 
       const token =
         createToken(player);
 
-      res.json({
+      return res.json({
         token,
-
         player:
           publicPlayer(player)
       });
+
     } catch (err) {
+
       console.error(
         'Login error:',
         err
       );
 
-      res.status(500).json({
+      return res.status(500).json({
         error:
-          'Could not sign in.'
+          'Login failed.'
       });
     }
   }
@@ -1179,83 +1612,65 @@ app.post(
 
 
 /* =========================================================
-   AUTH — CURRENT ACCOUNT
-========================================================= */
+   CURRENT USER
+   ========================================================= */
 
 app.get(
   '/api/auth/me',
   authMiddleware,
   async (req, res) => {
-    res.json({
+
+    return res.json({
       player:
-        publicPlayer(req.player)
+        publicPlayer(
+          req.player
+        )
     });
   }
 );
 
 
 /* =========================================================
-   PASSWORD RECOVERY — REQUEST
-========================================================= */
+   PASSWORD RECOVERY REQUEST
+   ========================================================= */
 
 app.post(
-  '/api/auth/forgot-password',
+  '/api/auth/recovery',
   async (req, res) => {
+
     try {
-      const username =
-        clean(
-          req.body?.username,
-          16
-        );
 
       const email =
         clean(
-          req.body?.email,
+          req.body.email,
           254
-        ).toLowerCase();
+        );
 
-      if (!username && !email) {
-        return res.json({
-          message:
-            'If the account can be recovered, recovery instructions will be provided.'
+      if (!validEmail(email)) {
+        return res.status(400).json({
+          error:
+            'Enter a valid email.'
         });
       }
 
-      let result;
+      const result =
+        await pool.query(
+          `
+          SELECT id
+          FROM players
+          WHERE LOWER(email) = LOWER($1)
+          LIMIT 1
+          `,
+          [email]
+        );
 
-      if (email) {
-        result =
-          await pool.query(
-            `
-            SELECT id, username, email
-            FROM players
-            WHERE LOWER(email) = LOWER($1)
-            LIMIT 1
-            `,
-            [email]
-          );
-      } else {
-        result =
-          await pool.query(
-            `
-            SELECT id, username, email
-            FROM players
-            WHERE LOWER(username) = LOWER($1)
-            LIMIT 1
-            `,
-            [username]
-          );
-      }
+      if (!result.rows.length) {
 
-      if (!result.rowCount) {
         return res.json({
           message:
-            'If the account can be recovered, recovery instructions will be provided.'
+            'If that email exists, a recovery link has been created.'
         });
       }
-
-      const player =
-        result.rows[0];
 
       const token =
         createRecoveryToken();
@@ -1269,33 +1684,36 @@ app.post(
         SET
           recovery_token_hash = $1,
           recovery_expires_at =
-            NOW() + INTERVAL '30 minutes',
-          updated_at = NOW()
+            NOW() + INTERVAL '30 minutes'
         WHERE id = $2
         `,
         [
           tokenHash,
-          player.id
+          result.rows[0].id
         ]
       );
 
       console.log(
-        `Password recovery requested for account ${player.username}.`
+        `Password recovery token for ${email}: ${token}`
       );
 
-      res.json({
+      return res.json({
         message:
-          'If the account can be recovered, recovery instructions will be provided.'
+          'Recovery instructions created.',
+        recoveryToken:
+          token
       });
+
     } catch (err) {
+
       console.error(
-        'Forgot password error:',
+        'Recovery error:',
         err
       );
 
-      res.status(500).json({
+      return res.status(500).json({
         error:
-          'Password recovery could not be started.'
+          'Could not create recovery request.'
       });
     }
   }
@@ -1303,43 +1721,28 @@ app.post(
 
 
 /* =========================================================
-   PASSWORD RECOVERY — RESET
-========================================================= */
+   PASSWORD RESET
+   ========================================================= */
 
 app.post(
   '/api/auth/reset-password',
   async (req, res) => {
+
     try {
+
       const token =
         clean(
-          req.body?.token,
-          200
+          req.body.token,
+          128
         );
 
       const password =
-        req.body?.password;
-
-      const confirmPassword =
-        req.body?.confirmPassword;
-
-      if (!token) {
-        return res.status(400).json({
-          error:
-            'Recovery token is missing.'
-        });
-      }
+        req.body.password;
 
       if (!validPassword(password)) {
         return res.status(400).json({
           error:
-            'Password must be at least 6 characters.'
-        });
-      }
-
-      if (password !== confirmPassword) {
-        return res.status(400).json({
-          error:
-            'Passwords do not match.'
+            'Password must be 6-100 characters.'
         });
       }
 
@@ -1349,7 +1752,7 @@ app.post(
       const result =
         await pool.query(
           `
-          SELECT *
+          SELECT id
           FROM players
           WHERE recovery_token_hash = $1
             AND recovery_expires_at > NOW()
@@ -1358,15 +1761,12 @@ app.post(
           [tokenHash]
         );
 
-      if (!result.rowCount) {
+      if (!result.rows.length) {
         return res.status(400).json({
           error:
-            'This recovery link is invalid or expired.'
+            'Recovery token is invalid or expired.'
         });
       }
-
-      const player =
-        result.rows[0];
 
       const passwordHash =
         await bcrypt.hash(
@@ -1386,21 +1786,23 @@ app.post(
         `,
         [
           passwordHash,
-          player.id
+          result.rows[0].id
         ]
       );
 
-      res.json({
+      return res.json({
         message:
-          'Password changed successfully.'
+          'Password successfully changed.'
       });
+
     } catch (err) {
+
       console.error(
-        'Reset password error:',
+        'Reset error:',
         err
       );
 
-      res.status(500).json({
+      return res.status(500).json({
         error:
           'Could not reset password.'
       });
@@ -1411,29 +1813,28 @@ app.post(
 
 /* =========================================================
    GOOGLE LOGIN
-========================================================= */
+   ========================================================= */
 
 app.post(
   '/api/auth/google',
   async (req, res) => {
+
     try {
-      if (
-        !googleClient ||
-        !process.env.GOOGLE_CLIENT_ID
-      ) {
+
+      if (!googleClient) {
         return res.status(503).json({
           error:
-            'Google login is not configured yet.'
+            'Google login is not configured.'
         });
       }
 
       const credential =
-        req.body?.credential;
+        req.body.credential;
 
       if (!credential) {
         return res.status(400).json({
           error:
-            'Google credential missing.'
+            'Google credential is required.'
         });
       }
 
@@ -1447,23 +1848,19 @@ app.post(
       const payload =
         ticket.getPayload();
 
-      if (
-        !payload ||
-        !payload.sub ||
-        !payload.email
-      ) {
-        return res.status(401).json({
-          error:
-            'Invalid Google account.'
-        });
-      }
-
       const googleId =
         payload.sub;
 
       const email =
-        String(payload.email)
-          .toLowerCase();
+        payload.email || '';
+
+      const googleName =
+        clean(
+          payload.name ||
+            'Player',
+          16
+        );
+
 
       let result =
         await pool.query(
@@ -1471,6 +1868,7 @@ app.post(
           SELECT *
           FROM players
           WHERE google_id = $1
+          LIMIT 1
           `,
           [googleId]
         );
@@ -1478,7 +1876,26 @@ app.post(
       let player =
         result.rows[0];
 
-      if (!player) {
+
+      /* Existing Google account */
+
+      if (player) {
+
+        const token =
+          createToken(player);
+
+        return res.json({
+          token,
+          player:
+            publicPlayer(player)
+        });
+      }
+
+
+      /* Existing email account */
+
+      if (email) {
+
         result =
           await pool.query(
             `
@@ -1493,16 +1910,8 @@ app.post(
         player =
           result.rows[0];
 
-        /*
-          IMPORTANT:
-          If this is an EXISTING account,
-          do not create a new background.
-
-          Its existing money/location/background
-          remain untouched.
-        */
-
         if (player) {
+
           await pool.query(
             `
             UPDATE players
@@ -1519,157 +1928,133 @@ app.post(
 
           player.google_id =
             googleId;
+
+          const token =
+            createToken(player);
+
+          return res.json({
+            token,
+            player:
+              publicPlayer(player)
+          });
         }
       }
 
-      /*
-        Only this branch creates a brand-new
-        Google account.
-      */
 
-      if (!player) {
-        const rawBase =
-          payload.name ||
-          email.split('@')[0] ||
-          'Player';
+      /* New Google account */
 
-        const base =
-          clean(
-            rawBase
-              .replace(
-                /[^A-Za-z0-9_]/g,
-                ''
-              ),
-            12
-          ) || 'Player';
+      let baseUsername =
+        googleName
+          .replace(/[^A-Za-z0-9]/g, '')
+          .slice(0, 12)
+          .toLowerCase();
 
-        let username =
-          base;
+      if (
+        !baseUsername ||
+        baseUsername.length < 3
+      ) {
+        baseUsername =
+          'player';
+      }
 
-        let number = 1;
+      let username =
+        baseUsername;
 
-        while (true) {
-          const check =
-            await pool.query(
-              `
-              SELECT id
-              FROM players
-              WHERE LOWER(username) =
-                    LOWER($1)
-              `,
-              [username]
-            );
+      for (let i = 0; i < 100; i++) {
 
-          if (!check.rowCount) {
-            break;
-          }
-
-          username =
-            `${base.slice(
-              0,
-              14
-            )}${number}`;
-
-          number++;
-        }
-
-        /*
-          NEW GOOGLE ACCOUNT:
-          Assign the background once.
-        */
-
-        const background =
-          createRandomBackground();
-
-        const startingPlace =
-          backgroundPlace(
-            background.neighborhood
-          );
-
-        result =
+        const check =
           await pool.query(
             `
-            INSERT INTO players
-            (
-              username,
-              google_id,
-              email,
-              name,
-              color,
-              money,
-              energy,
-              xp,
-              level,
-              lat,
-              lng,
-              background_type,
-              background_neighborhood
-            )
-            VALUES
-            (
-              $1,
-              $2,
-              $3,
-              $4,
-              '#16a34a',
-              $5,
-              100,
-              0,
-              1,
-              $6,
-              $7,
-              $8,
-              $9
-            )
-            RETURNING *
+            SELECT id
+            FROM players
+            WHERE LOWER(username) = LOWER($1)
+            LIMIT 1
             `,
-            [
-              username,
-
-              googleId,
-
-              email,
-
-              clean(
-                payload.name ||
-                  username,
-                16
-              ),
-
-              background.money,
-
-              startingPlace.lat,
-
-              startingPlace.lng,
-
-              background.type,
-
-              background.neighborhood
-            ]
+            [username]
           );
 
-        player =
-          result.rows[0];
+        if (!check.rows.length) {
+          break;
+        }
+
+        username =
+          `${baseUsername}${randomInt(
+            100,
+            9999
+          )}`.slice(0, 16);
       }
+
+
+      const background =
+        createRandomBackground();
+
+      const startingPlace =
+        backgroundPlace(
+          background.neighborhood
+        );
+
+
+      result =
+        await pool.query(
+          `
+          INSERT INTO players (
+            username,
+            google_id,
+            email,
+            name,
+            color,
+            money,
+            energy,
+            xp,
+            level,
+            lat,
+            lng,
+            background_type,
+            background_neighborhood
+          )
+          VALUES (
+            $1,$2,$3,$4,$5,
+            $6,100,0,1,
+            $7,$8,$9,$10
+          )
+          RETURNING *
+          `,
+          [
+            username,
+            googleId,
+            email || null,
+            googleName || username,
+            '#16a34a',
+            background.money,
+            startingPlace.lat,
+            startingPlace.lng,
+            background.type,
+            background.neighborhood
+          ]
+        );
+
+      player =
+        result.rows[0];
 
       const token =
         createToken(player);
 
-      res.json({
+      return res.json({
         token,
-
         player:
           publicPlayer(player)
       });
+
     } catch (err) {
+
       console.error(
         'Google login error:',
         err
       );
 
-      res.status(401).json({
+      return res.status(500).json({
         error:
-          'Google sign-in could not be completed.'
+          'Google login failed.'
       });
     }
   }
@@ -1677,30 +2062,77 @@ app.post(
 
 
 /* =========================================================
-   GAME WORLD
-========================================================= */
+   GAME MATH
+   ========================================================= */
 
-const meters = (a, b) =>
-  Math.hypot(
+function meters(a, b) {
+
+  return Math.hypot(
     (a.lat - b.lat) * 111000,
 
     (a.lng - b.lng) *
       111000 *
       Math.cos(
         a.lat *
-        Math.PI /
-        180
+          Math.PI /
+          180
       )
   );
+}
 
-const nearest = p =>
-  PLACES.find(
-    place =>
-      meters(p, place) < 200
+
+function nearest(player) {
+
+  let closest = null;
+  let closestDistance =
+    Infinity;
+
+  for (const place of PLACES) {
+
+    const distance =
+      meters(
+        player,
+        place
+      );
+
+    if (
+      distance <
+      closestDistance
+    ) {
+      closestDistance =
+        distance;
+
+      closest =
+        place;
+    }
+  }
+
+  if (
+    closest &&
+    closestDistance <= 220
+  ) {
+    return closest;
+  }
+
+  return null;
+}
+
+
+function hour() {
+
+  const now =
+    new Date();
+
+  return (
+    now.getHours() +
+    now.getMinutes() / 60
   );
+}
 
-const hour = () =>
-  (Date.now() / 60000) % 24;
+
+/* =========================================================
+   NPCs
+   ========================================================= */
 
 const ROLES = [
   'S',
@@ -1714,39 +2146,41 @@ const ROLES = [
 const npcs = [];
 
 PLACES.forEach(home => {
+
+  const config =
+    TYPES[home.type] ||
+    TYPES.ordinary;
+
   for (
     let k = 0;
-    k < TYPES[home.type].npc;
+    k < config.npc;
     k++
   ) {
+
     const work =
       Math.random() < 0.6
         ? home
-        : PLACES[
-            Math.floor(
-              Math.random() *
-              PLACES.length
-            )
-          ];
+        : randomItem(PLACES);
 
     npcs.push({
+
       home,
 
       work,
 
       r:
-        ROLES[
-          Math.floor(
-            Math.random() *
-            ROLES.length
-          )
-        ],
+        randomItem(ROLES),
 
-      lat: home.lat,
+      lat:
+        home.lat,
 
-      lng: home.lng,
+      lng:
+        home.lng,
 
-      off: [0, 0],
+      off: [
+        0,
+        0
+      ],
 
       shift:
         6 +
@@ -1755,83 +2189,182 @@ PLACES.forEach(home => {
   }
 });
 
+
+/* =========================================================
+   DANFO ROUTES
+   ========================================================= */
+
 const ROUTES = [
+
+  /* Central -> South */
+
   [
     'mokola',
     'dugbe',
     'okeado',
     'mapo',
+    'cocoa',
+    'iyaganku',
     'ringroad',
     'challenge',
     'oluyole',
-    'apata',
-    'odoona'
+    'apata'
   ],
+
+  /* North -> East */
 
   [
     'ui',
+    'samonda',
     'bodija',
+    'newbodija',
     'sango',
     'bashorun',
-    'akobo',
+    'poly_sango',
+    'polyibadan',
     'iwo',
-    'newgarage',
-    'agodi'
+    'akobo'
   ],
 
+  /* West corridor */
+
   [
+    'jericho',
+    'idiishin',
+    'eleyele',
+    'ologuneru',
+    'apete',
+    'ajibode',
+    'ijokodo',
+    'ui'
+  ],
+
+  /* South corridor */
+
+  [
+    'dugbe',
+    'okeado',
+    'ringroad',
+    'molete',
+    'newgarage',
+    'odogbo',
+    'odoona',
+    'oluyole'
+  ],
+
+  /* University route */
+
+  [
+    'ui',
+    'agbowo',
+    'sasa',
+    'orogun',
+    'ojoo',
+    'samonda',
+    'ui'
+  ],
+
+  /* East / Polytechnic route */
+
+  [
+    'gate',
+    'agodi',
+    'iwo',
+    'poly_sango',
+    'polyibadan',
+    'akobo',
+    'bashorun'
+  ],
+
+  /* West / Omi-Adio */
+
+  [
+    'jericho_gra',
     'jericho',
     'eleyele',
     'monatan',
     'omiadio',
-    'mokola',
-    'agodi',
-    'dugbe'
+    'apata',
+    'oluyole'
   ],
+
+  /* Central commercial route */
 
   [
     'dugbe',
-    'ringroad',
-    'newgarage',
-    'iwo',
-    'bashorun',
-    'bodija',
-    'ui',
-    'jericho'
+    'cocoa',
+    'mapo',
+    'gate',
+    'agodi',
+    'mokola',
+    'sango',
+    'bodija'
   ]
 ];
 
+
 const buses =
-  ROUTES.map(
-    (route, index) => ({
-      id: index,
+  ROUTES
+    .filter(route =>
+      route.every(
+        id => byId[id]
+      )
+    )
+    .map(
+      (route, index) => {
 
-      route,
+        const first =
+          byId[route[0]];
 
-      stop: 0,
+        return {
 
-      wait: 0,
+          id: index,
 
-      lat:
-        byId[route[0]].lat,
+          route,
 
-      lng:
-        byId[route[0]].lng
-    })
-  );
+          stop: 0,
 
-function glide(
-  object,
-  target,
-  step
-) {
-  const distance =
-    meters(
-      object,
-      target
+          wait: 0,
+
+          lat:
+            first.lat,
+
+          lng:
+            first.lng
+        };
+      }
     );
 
-  if (distance <= step) {
+
+function glide(object, target, speed) {
+
+  const dx =
+    target.lng -
+    object.lng;
+
+  const dy =
+    target.lat -
+    object.lat;
+
+  const distance =
+    Math.hypot(
+      dx,
+      dy
+    );
+
+  if (
+    distance < 0.00001
+  ) {
+    return true;
+  }
+
+  const step =
+    speed / 111000;
+
+  if (
+    distance <= step
+  ) {
+
     object.lat =
       target.lat;
 
@@ -1841,18 +2374,13 @@ function glide(
     return true;
   }
 
-  const factor =
-    step / distance;
-
   object.lat +=
-    (target.lat -
-      object.lat) *
-    factor;
+    (dy / distance) *
+    step;
 
   object.lng +=
-    (target.lng -
-      object.lng) *
-    factor;
+    (dx / distance) *
+    step;
 
   return false;
 }
@@ -1860,91 +2388,50 @@ function glide(
 
 /* =========================================================
    ACTIVE PLAYERS
-========================================================= */
+   ========================================================= */
 
 const players = {};
 
-async function savePlayer(player) {
-  if (
-    !player ||
-    !player.accountId
-  ) {
-    return;
-  }
+
+async function authFromToken(token) {
 
   try {
-    await pool.query(
-      `
-      UPDATE players
-      SET
-        name = $1,
-        color = $2,
-        money = $3,
-        energy = $4,
-        xp = $5,
-        level = $6,
-        lat = $7,
-        lng = $8,
-        updated_at = NOW()
-      WHERE id = $9
-      `,
-      [
-        player.name,
 
-        player.color,
+    const decoded =
+      jwt.verify(
+        token,
+        JWT_SECRET
+      );
 
-        Math.round(
-          player.money
-        ),
-
-        Math.round(
-          player.energy
-        ),
-
-        Math.round(
-          player.xp
-        ),
-
-        Math.round(
-          player.level
-        ),
-
-        player.lat,
-
-        player.lng,
-
-        player.accountId
-      ]
+    return await getPlayerById(
+      decoded.sub
     );
+
   } catch (err) {
-    console.error(
-      'Save player error:',
-      err
-    );
+
+    return null;
   }
 }
 
-async function sendMe(
-  socketId,
-  note
+
+/* =========================================================
+   SEND PLAYER DATA
+   ========================================================= */
+
+function sendMe(
+  socket,
+  player,
+  note = ''
 ) {
-  const player =
-    players[socketId];
 
-  if (!player) return;
-
-  io.to(socketId).emit(
+  socket.emit(
     'me',
     {
       money:
-        Math.round(
-          player.money
-        ),
+        player.money,
 
       energy:
-        Math.round(
-          player.energy
-        ),
+        player.energy,
 
       level:
         player.level,
@@ -1953,21 +2440,21 @@ async function sendMe(
         player.xp,
 
       need:
-        player.level * 50,
+        100 -
+        player.energy,
 
       riding:
-        player.bus !== null &&
-        player.bus !== undefined,
-
-      /*
-        BACKGROUND DATA FOR FRONTEND
-      */
+        player.riding
+          ? true
+          : false,
 
       backgroundType:
-        player.backgroundType || null,
+        player.backgroundType ||
+        null,
 
       backgroundNeighborhood:
-        player.backgroundNeighborhood || null,
+        player.backgroundNeighborhood ||
+        null,
 
       note
     }
@@ -1976,143 +2463,18 @@ async function sendMe(
 
 
 /* =========================================================
-   WORLD LOOP
-========================================================= */
+   SOCKET CONNECTION
+   ========================================================= */
 
-setInterval(() => {
-  const currentHour =
-    hour();
+io.on(
+  'connection',
+  async socket => {
 
-  for (const npc of npcs) {
-    const atWork =
-      currentHour >=
-        npc.shift &&
-      currentHour < 17;
-
-    const base =
-      atWork
-        ? npc.work
-        : npc.home;
-
-    if (
-      Math.random() <
-      0.05
-    ) {
-      npc.off = [
-        (Math.random() -
-          0.5) *
-          0.002,
-
-        (Math.random() -
-          0.5) *
-          0.002
-      ];
-    }
-
-    const night =
-      currentHour >= 21 ||
-      currentHour < 5;
-
-    glide(
-      npc,
-      {
-        lat:
-          base.lat +
-          npc.off[0] *
-            (night
-              ? 0.3
-              : 1),
-
-        lng:
-          base.lng +
-          npc.off[1] *
-            (night
-              ? 0.3
-              : 1)
-      },
-      40
-    );
-  }
-
-  for (const bus of buses) {
-    if (bus.wait > 0) {
-      bus.wait--;
-      continue;
-    }
-
-    const stop =
-      byId[
-        bus.route[
-          bus.stop
-        ]
-      ];
-
-    if (
-      glide(
-        bus,
-        stop,
-        70
-      )
-    ) {
-      bus.stop =
-        (bus.stop + 1) %
-        bus.route.length;
-
-      bus.wait = 6;
-    }
-  }
-
-  const round5 =
-    value =>
-      Math.round(
-        value * 100000
-      ) / 100000;
-
-  io.emit(
-    'world',
-    {
-      h:
-        currentHour,
-
-      npcs:
-        npcs.map(npc => [
-          round5(npc.lat),
-          round5(npc.lng),
-          npc.r
-        ]),
-
-      buses:
-        buses.map(bus => [
-          bus.id,
-          round5(bus.lat),
-          round5(bus.lng)
-        ])
-    }
-  );
-}, 500);
-
-
-/* =========================================================
-   SOCKET AUTHENTICATION
-========================================================= */
-
-io.use(
-  async (
-    socket,
-    next
-  ) => {
     try {
-      const token =
-        socket.handshake
-          .auth?.token;
 
-      if (!token) {
-        return next(
-          new Error(
-            'Login required.'
-          )
-        );
-      }
+      const token =
+        socket.handshake.auth &&
+        socket.handshake.auth.token;
 
       const account =
         await authFromToken(
@@ -2120,527 +2482,840 @@ io.use(
         );
 
       if (!account) {
-        return next(
-          new Error(
-            'Invalid login.'
-          )
+
+        socket.emit(
+          'authError',
+          {
+            error:
+              'Authentication failed.'
+          }
         );
+
+        socket.disconnect();
+
+        return;
       }
+
+
+      const startingPlace =
+        backgroundPlace(
+          account.background_neighborhood
+        );
+
+
+      const player = {
+
+        id:
+          String(account.id),
+
+        dbId:
+          account.id,
+
+        username:
+          account.username,
+
+        name:
+          account.name ||
+          account.username,
+
+        color:
+          account.color ||
+          '#16a34a',
+
+        money:
+          Number(account.money),
+
+        energy:
+          Number(account.energy),
+
+        xp:
+          Number(account.xp),
+
+        level:
+          Number(account.level),
+
+        lat:
+          account.lat ??
+          startingPlace.lat,
+
+        lng:
+          account.lng ??
+          startingPlace.lng,
+
+        targetLat:
+          account.lat ??
+          startingPlace.lat,
+
+        targetLng:
+          account.lng ??
+          startingPlace.lng,
+
+        riding:
+          null,
+
+        workCooldown:
+          0,
+
+        chatCooldown:
+          0,
+
+        backgroundType:
+          account.background_type ||
+          null,
+
+        backgroundNeighborhood:
+          account.background_neighborhood ||
+          null
+      };
+
+
+      players[
+        player.id
+      ] = player;
+
 
       socket.account =
-        account;
-
-      next();
-    } catch {
-      next(
-        new Error(
-          'Authentication failed.'
-        )
-      );
-    }
-  }
-);
+        player;
 
 
-/* =========================================================
-   GAME SOCKET
-========================================================= */
+      socket.emit(
+        'places',
+        PLACES.map(place => ({
+          id:
+            place.id,
 
-io.on(
-  'connection',
-  async socket => {
-    const account =
-      socket.account;
+          name:
+            place.name,
 
-    let lat =
-      account.lat;
+          type:
+            place.type,
 
-    let lng =
-      account.lng;
-
-    if (
-      !Number.isFinite(lat)
-    ) {
-      lat =
-        START.lat;
-    }
-
-    if (
-      !Number.isFinite(lng)
-    ) {
-      lng =
-        START.lng;
-    }
-
-    players[socket.id] = {
-      socketId:
-        socket.id,
-
-      accountId:
-        Number(account.id),
-
-      name:
-        clean(
-          account.name,
-          16
-        ) ||
-        'Player',
-
-      username:
-        account.username,
-
-      color:
-        validColor(
-          account.color
-        )
-          ? account.color
-          : '#16a34a',
-
-      lat,
-
-      lng,
-
-      target: null,
-
-      money:
-        Number(account.money),
-
-      energy:
-        Number(account.energy),
-
-      xp:
-        Number(account.xp),
-
-      level:
-        Number(account.level),
-
-      /*
-        LOAD THE STORED BACKGROUND.
-
-        Existing players may have NULL here.
-        They are NOT randomly assigned.
-      */
-
-      backgroundType:
-        account.background_type ||
-        null,
-
-      backgroundNeighborhood:
-        account.background_neighborhood ||
-        null,
-
-      lastWork: 0,
-
-      lastChat: 0,
-
-      bus: null
-    };
-
-    const player =
-      players[socket.id];
-
-    socket.emit(
-      'places',
-      PLACES
-    );
-
-    await sendMe(
-      socket.id,
-      `Welcome back to Ibadan, ${player.name}!`
-    );
-
-
-    /* -----------------------------------------------------
-       MOVE
-    ----------------------------------------------------- */
-
-    socket.on(
-      'moveTo',
-      target => {
-        if (
-          !player ||
-          player.bus !== null &&
-          player.bus !== undefined
-        ) {
-          return;
-        }
-
-        if (
-          !target ||
-          !Number.isFinite(
-            Number(target.lat)
-          ) ||
-          !Number.isFinite(
-            Number(target.lng)
-          )
-        ) {
-          return;
-        }
-
-        player.target = {
           lat:
-            Number(target.lat),
+            place.lat,
 
           lng:
-            Number(target.lng)
-        };
-      }
-    );
+            place.lng,
+
+          job:
+            place.job,
+
+          pay:
+            place.pay,
+
+          xp:
+            place.xp
+        }))
+      );
 
 
-    /* -----------------------------------------------------
-       WORK
-    ----------------------------------------------------- */
+      sendMe(
+        socket,
+        player,
+        player.backgroundType
+          ? `You are a ${player.backgroundType} starting around ${startingPlace.name}.`
+          : 'Welcome to Ibadan Life.'
+      );
 
-    socket.on(
-      'work',
-      async () => {
-        if (!player) return;
 
-        const place =
-          nearest(player);
+      socket.on(
+        'moveTo',
+        data => {
 
-        if (!place) {
-          return sendMe(
-            player.socketId,
-            'Walk to a location marker to work.'
-          );
+          if (
+            player.riding !== null
+          ) {
+            return;
+          }
+
+          const lat =
+            Number(data.lat);
+
+          const lng =
+            Number(data.lng);
+
+          if (
+            !Number.isFinite(lat) ||
+            !Number.isFinite(lng)
+          ) {
+            return;
+          }
+
+          if (
+            Math.abs(lat) > 90 ||
+            Math.abs(lng) > 180
+          ) {
+            return;
+          }
+
+          player.targetLat =
+            lat;
+
+          player.targetLng =
+            lng;
         }
+      );
 
-        if (
-          Date.now() -
-            player.lastWork <
-          2500
-        ) {
-          return;
-        }
 
-        if (
-          player.energy < 10
-        ) {
-          return sendMe(
-            player.socketId,
-            'Too tired. Eat something or wait.'
-          );
-        }
+      /* =====================================================
+         WORK
+         ===================================================== */
 
-        player.lastWork =
-          Date.now();
+      socket.on(
+        'work',
+        async () => {
 
-        player.energy -= 10;
+          const now =
+            Date.now();
 
-        const pay =
-          Math.round(
-            place.pay *
-              TYPES[
-                place.type
-              ].pay *
-              (
-                1 +
-                (player.level -
-                  1) *
-                  0.08
-              )
-          );
+          if (
+            now <
+            player.workCooldown
+          ) {
+            return sendMe(
+              socket,
+              player,
+              'Slow down.'
+            );
+          }
 
-        player.money +=
-          pay;
+          if (
+            player.riding !== null
+          ) {
+            return sendMe(
+              socket,
+              player,
+              'Get off the bus first.'
+            );
+          }
 
-        player.xp +=
-          place.xp;
+          if (
+            player.energy < 10
+          ) {
+            return sendMe(
+              socket,
+              player,
+              'You are too tired. Eat or wait.'
+            );
+          }
 
-        while (
-          player.xp >=
-          player.level *
-            50
-        ) {
-          player.xp -=
+          const place =
+            nearest(player);
+
+          if (!place) {
+            return sendMe(
+              socket,
+              player,
+              'Move closer to a workplace.'
+            );
+          }
+
+
+          const type =
+            TYPES[place.type] ||
+            TYPES.ordinary;
+
+
+          const levelMultiplier =
+            1 +
+            (
+              Math.max(
+                0,
+                player.level - 1
+              ) * 0.05
+            );
+
+
+          const pay =
+            Math.floor(
+              place.pay *
+              type.pay *
+              levelMultiplier
+            );
+
+
+          player.money +=
+            pay;
+
+          player.energy -=
+            10;
+
+          player.xp +=
+            place.xp;
+
+
+          let levelUp =
+            false;
+
+
+          const neededXp =
             player.level *
-            50;
-
-          player.level++;
-        }
-
-        await savePlayer(
-          player
-        );
-
-        sendMe(
-          player.socketId,
-          `${place.job} at ${place.name}: +₦${pay.toLocaleString()}`
-        );
-      }
-    );
+            100;
 
 
-    /* -----------------------------------------------------
-       EAT
-    ----------------------------------------------------- */
+          if (
+            player.xp >=
+            neededXp
+          ) {
 
-    socket.on(
-      'eat',
-      async () => {
-        if (!player) return;
+            player.xp -=
+              neededXp;
 
-        const place =
-          nearest(player);
+            player.level +=
+              1;
 
-        if (!place) {
-          return sendMe(
-            player.socketId,
-            'Walk to a location to buy food.'
-          );
-        }
-
-        if (
-          player.money < 1500
-        ) {
-          return sendMe(
-            player.socketId,
-            'Not enough money.'
-          );
-        }
-
-        player.money -=
-          1500;
-
-        player.energy =
-          Math.min(
-            100,
-            player.energy +
-              40
-          );
-
-        await savePlayer(
-          player
-        );
-
-        sendMe(
-          player.socketId,
-          `Ate amala at ${place.name}: -₦1,500, +40 energy`
-        );
-      }
-    );
+            levelUp =
+              true;
+          }
 
 
-    /* -----------------------------------------------------
-       RIDE
-    ----------------------------------------------------- */
+          player.workCooldown =
+            now + 2500;
 
-    socket.on(
-      'ride',
-      async () => {
-        if (!player) return;
-
-        if (
-          player.bus !== null
-        ) {
-          player.bus =
-            null;
 
           await savePlayer(
             player
           );
 
-          return sendMe(
-            player.socketId,
-            'You got off the danfo.'
+
+          sendMe(
+            socket,
+            player,
+
+            levelUp
+              ? `You worked as ${place.job} at ${place.name} and earned ₦${pay.toLocaleString()}. LEVEL UP!`
+              : `You worked as ${place.job} at ${place.name} and earned ₦${pay.toLocaleString()}.`
           );
         }
+      );
 
-        const bus =
-          buses.find(
-            currentBus =>
+
+      /* =====================================================
+         EAT
+         ===================================================== */
+
+      socket.on(
+        'eat',
+        async () => {
+
+          if (
+            player.riding !== null
+          ) {
+            return sendMe(
+              socket,
+              player,
+              'Get off the bus first.'
+            );
+          }
+
+          const COST =
+            1500;
+
+          if (
+            player.money < COST
+          ) {
+            return sendMe(
+              socket,
+              player,
+              'You need ₦1,500 to eat.'
+            );
+          }
+
+          if (
+            player.energy >= 100
+          ) {
+            return sendMe(
+              socket,
+              player,
+              'Your energy is already full.'
+            );
+          }
+
+
+          const place =
+            nearest(player);
+
+          if (!place) {
+            return sendMe(
+              socket,
+              player,
+              'Move near a place before eating.'
+            );
+          }
+
+
+          player.money -=
+            COST;
+
+          player.energy =
+            Math.min(
+              100,
+              player.energy + 40
+            );
+
+
+          await pool.query(
+            `
+            INSERT INTO money_transactions (
+              player_id,
+              amount,
+              reason
+            )
+            VALUES ($1,$2,$3)
+            `,
+            [
+              player.dbId,
+              -COST,
+              `Food at ${place.name}`
+            ]
+          );
+
+
+          await savePlayer(
+            player
+          );
+
+
+          sendMe(
+            socket,
+            player,
+            `You ate at ${place.name}. Energy restored.`
+          );
+        }
+      );
+
+
+      /* =====================================================
+         RIDE DANFO
+         ===================================================== */
+
+      socket.on(
+        'ride',
+        async () => {
+
+          /* Get off */
+
+          if (
+            player.riding !== null
+          ) {
+
+            player.riding =
+              null;
+
+            sendMe(
+              socket,
+              player,
+              'You got off the danfo.'
+            );
+
+            return;
+          }
+
+
+          let closestBus =
+            null;
+
+          let closestDistance =
+            Infinity;
+
+
+          for (
+            const bus of buses
+          ) {
+
+            const distance =
               meters(
                 player,
-                currentBus
-              ) < 250
-          );
+                bus
+              );
 
-        if (!bus) {
-          return sendMe(
-            player.socketId,
-            'No danfo nearby. Wait at a marker.'
-          );
-        }
+            if (
+              distance <
+              closestDistance
+            ) {
 
-        if (
-          player.money < 200
-        ) {
-          return sendMe(
-            player.socketId,
-            'Fare is ₦200. Not enough money.'
-          );
-        }
+              closestDistance =
+                distance;
 
-        player.money -=
-          200;
-
-        player.bus =
-          bus.id;
-
-        player.target =
-          null;
-
-        await savePlayer(
-          player
-        );
-
-        sendMe(
-          player.socketId,
-          'You boarded the danfo (-₦200). Tap Get off to leave.'
-        );
-      }
-    );
-
-
-    /* -----------------------------------------------------
-       CHAT
-    ----------------------------------------------------- */
-
-    socket.on(
-      'chat',
-      message => {
-        if (!player) return;
-
-        const text =
-          clean(
-            message,
-            140
-          );
-
-        if (
-          !text ||
-          Date.now() -
-            player.lastChat <
-            800
-        ) {
-          return;
-        }
-
-        player.lastChat =
-          Date.now();
-
-        io.emit(
-          'chat',
-          {
-            name:
-              player.name,
-
-            text
+              closestBus =
+                bus;
+            }
           }
-        );
-      }
-    );
 
 
-    /* -----------------------------------------------------
-       DISCONNECT
-    ----------------------------------------------------- */
+          if (
+            !closestBus ||
+            closestDistance > 250
+          ) {
 
-    socket.on(
-      'disconnect',
-      async () => {
-        const leaving =
-          players[
-            socket.id
-          ];
+            return sendMe(
+              socket,
+              player,
+              'No danfo is close enough.'
+            );
+          }
 
-        if (leaving) {
-          await savePlayer(
-            leaving
+
+          const fare =
+            200;
+
+
+          if (
+            player.money < fare
+          ) {
+
+            return sendMe(
+              socket,
+              player,
+              'You need ₦200 for the danfo.'
+            );
+          }
+
+
+          player.money -=
+            fare;
+
+          player.riding =
+            closestBus.id;
+
+
+          await pool.query(
+            `
+            INSERT INTO money_transactions (
+              player_id,
+              amount,
+              reason
+            )
+            VALUES ($1,$2,$3)
+            `,
+            [
+              player.dbId,
+              -fare,
+              'Danfo fare'
+            ]
           );
+
+
+          await savePlayer(
+            player
+          );
+
+
+          sendMe(
+            socket,
+            player,
+            'You entered a danfo.'
+          );
+        }
+      );
+
+
+      /* =====================================================
+         CHAT
+         ===================================================== */
+
+      socket.on(
+        'chat',
+        data => {
+
+          const now =
+            Date.now();
+
+          if (
+            now <
+            player.chatCooldown
+          ) {
+            return;
+          }
+
+          const message =
+            clean(
+              data.message,
+              140
+            );
+
+          if (!message) {
+            return;
+          }
+
+          player.chatCooldown =
+            now + 800;
+
+
+          io.emit(
+            'chat',
+            {
+              id:
+                player.id,
+
+              name:
+                player.name,
+
+              color:
+                player.color,
+
+              message
+            }
+          );
+        }
+      );
+
+
+      /* =====================================================
+         DISCONNECT
+         ===================================================== */
+
+      socket.on(
+        'disconnect',
+        async () => {
+
+          try {
+
+            await savePlayer(
+              player
+            );
+
+          } catch (err) {
+
+            console.error(
+              'Disconnect save error:',
+              err
+            );
+          }
 
           delete players[
-            socket.id
+            player.id
           ];
         }
+      );
 
-        io.emit(
-          'left',
-          socket.id
-        );
-      }
-    );
+    } catch (err) {
+
+      console.error(
+        'Socket connection error:',
+        err
+      );
+
+      socket.disconnect();
+    }
   }
 );
 
 
 /* =========================================================
-   ACTIVE PLAYER STATE
-========================================================= */
+   WORLD LOOP
+   ========================================================= */
 
 setInterval(
-  async () => {
-    const list = [];
+  () => {
+
+    const currentHour =
+      hour();
+
+
+    /* NPC movement */
+
+    for (
+      const npc of npcs
+    ) {
+
+      const working =
+        currentHour >=
+          7 &&
+        currentHour < 18;
+
+
+      const destination =
+        working
+          ? npc.work
+          : npc.home;
+
+
+      if (
+        glide(
+          npc,
+          destination,
+          8
+        )
+      ) {
+
+        if (
+          Math.random() <
+          0.015
+        ) {
+
+          npc.off = [
+            (Math.random() - 0.5) *
+              0.0005,
+
+            (Math.random() - 0.5) *
+              0.0005
+          ];
+        }
+      }
+    }
+
+
+    /* Bus movement */
+
+    for (
+      const bus of buses
+    ) {
+
+      if (
+        bus.wait > 0
+      ) {
+
+        bus.wait -=
+          0.5;
+
+        continue;
+      }
+
+
+      const route =
+        bus.route;
+
+      const targetId =
+        route[
+          bus.stop
+        ];
+
+      const target =
+        byId[targetId];
+
+
+      if (!target) {
+        continue;
+      }
+
+
+      const arrived =
+        glide(
+          bus,
+          target,
+          25
+        );
+
+
+      if (arrived) {
+
+        bus.wait =
+          4;
+
+        bus.stop =
+          (
+            bus.stop + 1
+          ) %
+          route.length;
+      }
+    }
+
+
+    io.emit(
+      'world',
+      {
+        hour:
+          currentHour,
+
+        npcs:
+          npcs.map(npc => ({
+            lat:
+              npc.lat +
+              npc.off[0],
+
+            lng:
+              npc.lng +
+              npc.off[1],
+
+            r:
+              npc.r
+          })),
+
+        buses:
+          buses.map(bus => ({
+            id:
+              bus.id,
+
+            lat:
+              bus.lat,
+
+            lng:
+              bus.lng
+          }))
+      }
+    );
+
+  },
+  500
+);
+
+
+/* =========================================================
+   PLAYER STATE LOOP
+   ========================================================= */
+
+setInterval(
+  () => {
+
+    const state = [];
+
 
     for (
       const player of
       Object.values(players)
     ) {
+
+      /* Player is riding a bus */
+
       if (
-        player.bus !== null &&
-        player.bus !== undefined
+        player.riding !== null
       ) {
+
         const bus =
-          buses[
-            player.bus
-          ];
+          buses.find(
+            b =>
+              b.id ===
+              player.riding
+          );
 
         if (bus) {
+
           player.lat =
             bus.lat;
 
           player.lng =
             bus.lng;
-        }
-      } else if (
-        player.target
-      ) {
-        const distance =
-          meters(
-            player,
-            player.target
-          );
 
-        const step = 8;
+          player.targetLat =
+            bus.lat;
 
-        if (
-          distance <= step
-        ) {
-          player.lat =
-            player.target.lat;
-
-          player.lng =
-            player.target.lng;
-
-          player.target =
-            null;
-        } else {
-          const factor =
-            step / distance;
-
-          player.lat +=
-            (
-              player.target.lat -
-              player.lat
-            ) *
-            factor;
-
-          player.lng +=
-            (
-              player.target.lng -
-              player.lng
-            ) *
-            factor;
+          player.targetLng =
+            bus.lng;
         }
       }
 
-      list.push({
+
+      /* Walking */
+
+      else {
+
+        glide(
+          player,
+          {
+            lat:
+              player.targetLat,
+
+            lng:
+              player.targetLng
+          },
+          8
+        );
+      }
+
+
+      state.push({
         id:
-          String(
-            player.accountId
-          ),
+          player.id,
 
         name:
           player.name,
@@ -2657,52 +3332,85 @@ setInterval(
         level:
           player.level,
 
-        /*
-          Background is also available
-          in the multiplayer state.
-        */
-
         backgroundType:
-          player.backgroundType,
+          player.backgroundType ||
+          null,
 
         backgroundNeighborhood:
-          player.backgroundNeighborhood
+          player.backgroundNeighborhood ||
+          null
       });
     }
 
+
     io.emit(
       'state',
-      list
+      state
     );
+
   },
   200
 );
 
 
 /* =========================================================
-   ENERGY + PERIODIC SAVE
-========================================================= */
+   ENERGY / SAVE LOOP
+   ========================================================= */
 
 setInterval(
   async () => {
+
     for (
       const player of
       Object.values(players)
     ) {
-      player.energy =
-        Math.min(
-          100,
-          player.energy + 1
+
+      if (
+        player.energy < 100
+      ) {
+
+        player.energy =
+          Math.min(
+            100,
+            player.energy + 1
+          );
+      }
+
+
+      try {
+
+        await savePlayer(
+          player
         );
 
-      sendMe(
-        player.socketId
-      );
+      } catch (err) {
 
-      await savePlayer(
-        player
-      );
+        console.error(
+          'Autosave error:',
+          err
+        );
+      }
+
+
+      const socket =
+        [...io.sockets.sockets.values()]
+          .find(
+            s =>
+              s.account &&
+              s.account.id ===
+              player.id
+          );
+
+
+      if (socket) {
+
+        sendMe(
+          socket,
+          player
+        );
+      }
     }
+
   },
   5000
 );
@@ -2710,32 +3418,66 @@ setInterval(
 
 /* =========================================================
    HEALTH
-========================================================= */
+   ========================================================= */
 
 app.get(
   '/health',
   (req, res) => {
-    res.send('ok');
+
+    res.json({
+      ok: true,
+
+      game:
+        'Ibadan Life',
+
+      players:
+        Object.keys(players).length,
+
+      places:
+        PLACES.length,
+
+      npcs:
+        npcs.length,
+
+      buses:
+        buses.length
+    });
   }
 );
 
 
 /* =========================================================
    START SERVER
-========================================================= */
+   ========================================================= */
 
 initDatabase()
   .then(() => {
+
     srv.listen(
       PORT,
       () => {
+
         console.log(
           `Ibadan Life running on port ${PORT}`
         );
+
+        console.log(
+          `World locations: ${PLACES.length}`
+        );
+
+        console.log(
+          `NPCs: ${npcs.length}`
+        );
+
+        console.log(
+          `Danfo routes: ${buses.length}`
+        );
       }
     );
+
   })
   .catch(err => {
+
     console.error(
       'Database initialization failed:',
       err
