@@ -1,2421 +1,3846 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+
 <title>Ibadan Life</title>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 
 <style>
-*{box-sizing:border-box}
+:root{
+  --bg:#070b12;
+  --panel:#0d1420;
+  --panel2:#111b2a;
+  --glass:rgba(13,20,32,.86);
+  --line:rgba(255,255,255,.09);
+  --text:#f7f9fc;
+  --muted:#8995a8;
+  --green:#25e38a;
+  --blue:#4b8cff;
+  --orange:#ffad42;
+  --red:#ff5573;
+  --purple:#a878ff;
+  --cyan:#25d9ff;
+  --shadow:0 20px 60px rgba(0,0,0,.42);
+}
+
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
 
 html,body{
   margin:0;
+  width:100%;
   height:100%;
-  font-family:system-ui,sans-serif
+  overflow:hidden;
+  background:var(--bg);
+  color:var(--text);
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+button,input{
+  font:inherit;
+}
+
+button{
+  border:0;
+  color:inherit;
+  cursor:pointer;
+}
+
+.hidden{
+  display:none!important;
+}
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+#authScreen{
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:22px;
+  overflow:auto;
+  background:
+    radial-gradient(circle at 20% 10%,rgba(37,227,138,.17),transparent 30%),
+    radial-gradient(circle at 80% 80%,rgba(75,140,255,.20),transparent 35%),
+    linear-gradient(135deg,#050810,#0b1220);
+}
+
+.authBox{
+  width:min(440px,100%);
+  padding:30px;
+  border:1px solid var(--line);
+  border-radius:30px;
+  background:rgba(9,14,23,.82);
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(25px);
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  gap:13px;
+  margin-bottom:26px;
+}
+
+.logoMark{
+  width:55px;
+  height:55px;
+  border-radius:17px;
+  display:grid;
+  place-items:center;
+  font-size:28px;
+  background:linear-gradient(135deg,var(--green),var(--blue));
+  box-shadow:0 10px 35px rgba(37,227,138,.25);
+}
+
+.logo h1{
+  margin:0;
+  font-size:26px;
+}
+
+.logo small{
+  display:block;
+  margin-top:3px;
+  color:var(--muted);
+}
+
+.authTabs{
+  display:flex;
+  gap:6px;
+  padding:5px;
+  border-radius:14px;
+  background:#080d16;
+  margin-bottom:20px;
+}
+
+.authTabs button{
+  flex:1;
+  padding:11px;
+  border-radius:10px;
+  background:transparent;
+  color:var(--muted);
+}
+
+.authTabs button.active{
+  background:#182335;
+  color:white;
+}
+
+.field{
+  margin-bottom:13px;
+}
+
+.field label{
+  display:block;
+  margin-bottom:7px;
+  font-size:12px;
+  color:var(--muted);
+}
+
+.field input{
+  width:100%;
+  padding:14px 15px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  outline:none;
+  color:white;
+  background:#0a101a;
+}
+
+.field input:focus{
+  border-color:var(--green);
+}
+
+.primary{
+  width:100%;
+  padding:15px;
+  border-radius:15px;
+  font-weight:800;
+  background:linear-gradient(135deg,var(--green),#16b9e8);
+  color:#03110c;
+  margin-top:4px;
+}
+
+.google{
+  width:100%;
+  padding:14px;
+  border-radius:15px;
+  background:white;
+  color:#111;
+  font-weight:700;
+  margin-top:10px;
+}
+
+.authMsg{
+  min-height:20px;
+  margin-top:12px;
+  text-align:center;
+  color:var(--muted);
+  font-size:13px;
+}
+
+/* =========================================================
+   GAME
+========================================================= */
+
+#game{
+  position:fixed;
+  inset:0;
+  overflow:hidden;
 }
 
 #map{
   position:absolute;
-  inset:0
-}
-
-#night{
-  position:absolute;
   inset:0;
-  z-index:900;
-  pointer-events:none;
-  background:#0b1440;
-  opacity:0;
-  transition:opacity 2s
+  background:#101923;
 }
 
-#hud{
+.leaflet-control-attribution{
+  font-size:8px!important;
+}
+
+/* =========================================================
+   TOP HUD
+========================================================= */
+
+.topHUD{
   position:absolute;
-  top:env(safe-area-inset-top,0);
-  left:0;
-  right:0;
-  z-index:1000;
+  top:calc(10px + env(safe-area-inset-top));
+  left:12px;
+  right:12px;
+  z-index:2000;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  pointer-events:none;
+}
+
+.playerMini{
+  pointer-events:auto;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 13px 8px 8px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:var(--glass);
+  backdrop-filter:blur(20px);
+  box-shadow:var(--shadow);
+}
+
+.avatar{
+  width:40px;
+  height:40px;
+  border-radius:14px;
+  display:grid;
+  place-items:center;
+  font-weight:900;
+  color:#fff;
+  background:linear-gradient(135deg,#3a79ff,#8e53ff);
+}
+
+.playerName{
+  font-weight:800;
+  font-size:13px;
+}
+
+.level{
+  margin-top:3px;
+  color:var(--muted);
+  font-size:10px;
+}
+
+.stats{
+  pointer-events:auto;
   display:flex;
   gap:6px;
-  padding:8px;
-  justify-content:center;
-  flex-wrap:wrap
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  max-width:55%;
 }
 
-.pill{
-  background:#000b;
-  color:#fff;
-  border-radius:99px;
-  padding:6px 12px;
-  font-size:14px
+.stat{
+  padding:9px 11px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:var(--glass);
+  backdrop-filter:blur(20px);
+  font-size:11px;
+  box-shadow:var(--shadow);
 }
 
-#bar{
+.stat b{
+  margin-left:4px;
+}
+
+.money b{color:var(--green)}
+.energy b{color:var(--orange)}
+.xp b{color:var(--blue)}
+
+/* =========================================================
+   MAP SIDE CONTROLS
+========================================================= */
+
+.mapControls{
   position:absolute;
-  bottom:0;
-  left:0;
-  right:0;
-  z-index:1000;
-  padding:8px 8px calc(8px + env(safe-area-inset-bottom,0));
-  background:#000a
+  right:12px;
+  top:105px;
+  z-index:1500;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
 }
 
-#log{
-  max-height:90px;
-  overflow:auto;
+.mapBtn{
+  width:45px;
+  height:45px;
+  border-radius:15px;
+  border:1px solid var(--line);
+  background:var(--glass);
+  backdrop-filter:blur(20px);
+  font-size:19px;
+  box-shadow:var(--shadow);
+}
+
+.mapBtn:active{
+  transform:scale(.94);
+}
+
+/* =========================================================
+   WORLD EVENT CARD
+========================================================= */
+
+.worldCard{
+  position:absolute;
+  z-index:1400;
+  left:12px;
+  top:104px;
+  width:min(260px,calc(100% - 75px));
+  padding:13px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:var(--glass);
+  backdrop-filter:blur(20px);
+  box-shadow:var(--shadow);
+}
+
+.worldTitle{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-weight:800;
+  font-size:12px;
+}
+
+.liveDot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 12px var(--green);
+}
+
+.worldText{
+  margin-top:7px;
+  color:var(--muted);
+  font-size:11px;
+}
+
+/* =========================================================
+   QUICK ACTIONS
+========================================================= */
+
+.quickActions{
+  position:absolute;
+  left:12px;
+  right:12px;
+  bottom:90px;
+  z-index:1600;
+  display:flex;
+  gap:8px;
+  justify-content:center;
+  pointer-events:none;
+}
+
+.quick{
+  pointer-events:auto;
+  min-width:68px;
+  padding:9px 11px;
+  border-radius:15px;
+  border:1px solid var(--line);
+  background:var(--glass);
+  backdrop-filter:blur(18px);
+  box-shadow:var(--shadow);
+  text-align:center;
+  font-size:11px;
+}
+
+.quick span{
+  display:block;
+  font-size:20px;
+  margin-bottom:3px;
+}
+
+/* =========================================================
+   BOTTOM NAV
+========================================================= */
+
+.bottomNav{
+  position:absolute;
+  z-index:5000;
+  left:9px;
+  right:9px;
+  bottom:calc(8px + env(safe-area-inset-bottom));
+  height:66px;
+  display:flex;
+  align-items:center;
+  justify-content:space-around;
+  padding:5px;
+  border:1px solid var(--line);
+  border-radius:22px;
+  background:rgba(7,11,18,.92);
+  backdrop-filter:blur(25px);
+  box-shadow:0 15px 55px rgba(0,0,0,.55);
+}
+
+.navBtn{
+  width:20%;
+  height:56px;
+  border-radius:16px;
+  background:transparent;
+  color:#788497;
+  font-size:10px;
+}
+
+.navBtn span{
+  display:block;
+  font-size:21px;
+  margin-bottom:3px;
+}
+
+.navBtn.active{
+  background:#172235;
+  color:white;
+}
+
+.phoneNav{
+  position:relative;
+}
+
+.notificationBadge{
+  position:absolute;
+  top:3px;
+  right:14px;
+  min-width:17px;
+  height:17px;
+  padding:0 4px;
+  border-radius:20px;
+  display:grid;
+  place-items:center;
+  background:var(--red);
   color:#fff;
-  font-size:13px;
-  margin-bottom:6px
+  font-size:9px;
+  font-weight:900;
 }
 
-#log div{
-  margin:2px 0
+/* =========================================================
+   PANELS
+========================================================= */
+
+.panel{
+  position:absolute;
+  z-index:6000;
+  inset:0;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  background:rgba(0,0,0,.48);
+  backdrop-filter:blur(4px);
 }
 
-.sys{
-  color:#facc15
+.panelCard{
+  width:min(650px,100%);
+  max-height:91%;
+  overflow:auto;
+  padding:18px;
+  border:1px solid var(--line);
+  border-radius:28px 28px 0 0;
+  background:
+    linear-gradient(180deg,#101a29,#080d15);
+  box-shadow:0 -20px 70px rgba(0,0,0,.5);
+}
+
+.panelHeader{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:17px;
+}
+
+.panelHeader h2{
+  margin:0;
+  font-size:20px;
+}
+
+.closeBtn{
+  width:37px;
+  height:37px;
+  border-radius:12px;
+  background:#182333;
+  color:#aeb9ca;
+}
+
+/* =========================================================
+   PHONE
+========================================================= */
+
+.phonePanel{
+  align-items:center;
+  background:rgba(0,0,0,.72);
+}
+
+.phone{
+  position:relative;
+  width:min(370px,92vw);
+  height:min(760px,88vh);
+  overflow:hidden;
+  border:8px solid #1a1d25;
+  border-radius:43px;
+  background:#070b13;
+  box-shadow:
+    0 35px 100px rgba(0,0,0,.75),
+    inset 0 0 0 1px #444;
+}
+
+.phoneNotch{
+  position:absolute;
+  z-index:20;
+  top:0;
+  left:50%;
+  transform:translateX(-50%);
+  width:115px;
+  height:27px;
+  border-radius:0 0 18px 18px;
+  background:#08090c;
+}
+
+.phoneStatus{
+  position:absolute;
+  z-index:10;
+  top:7px;
+  left:17px;
+  right:17px;
+  display:flex;
+  justify-content:space-between;
+  font-size:10px;
+  color:white;
+  pointer-events:none;
+}
+
+.phoneHome{
+  position:absolute;
+  inset:0;
+  padding:42px 16px 18px;
+  overflow:auto;
+  background:
+    radial-gradient(circle at 20% 10%,rgba(37,227,138,.22),transparent 35%),
+    radial-gradient(circle at 90% 70%,rgba(76,105,255,.25),transparent 40%),
+    linear-gradient(145deg,#09111d,#111725);
+}
+
+.phoneGreeting{
+  margin:15px 5px 20px;
+}
+
+.phoneGreeting small{
+  color:#a4afc0;
+}
+
+.phoneGreeting h2{
+  margin:4px 0;
+  font-size:27px;
+}
+
+.phoneDate{
+  color:#7d8a9f;
+  font-size:11px;
+}
+
+.phoneWidgets{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:17px;
+}
+
+.phoneWidget{
+  padding:14px;
+  min-height:84px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:19px;
+  background:rgba(255,255,255,.06);
+}
+
+.phoneWidget .big{
+  font-size:22px;
+  font-weight:900;
+}
+
+.phoneWidget small{
+  color:#8490a4;
+}
+
+.appGrid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:15px 8px;
+}
+
+.app{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  background:none;
+  color:white;
+  font-size:10px;
+}
+
+.appIcon{
+  width:53px;
+  height:53px;
+  border-radius:17px;
+  display:grid;
+  place-items:center;
+  font-size:25px;
+  background:linear-gradient(145deg,#1a2a40,#101825);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 8px 20px rgba(0,0,0,.25);
+}
+
+.app:nth-child(2n) .appIcon{
+  background:linear-gradient(145deg,#192b25,#101c19);
+}
+
+.appBadge{
+  position:absolute;
+  top:-4px;
+  right:12px;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:var(--red);
+  font-size:9px;
+  font-weight:900;
+}
+
+.phoneDock{
+  position:absolute;
+  left:13px;
+  right:13px;
+  bottom:14px;
+  height:66px;
+  border-radius:23px;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.08);
+  backdrop-filter:blur(20px);
+}
+
+.dockBtn{
+  background:none;
+  font-size:22px;
+}
+
+.dockBtn small{
+  display:block;
+  color:#9ca8ba;
+  font-size:8px;
+  margin-top:2px;
+}
+
+/* =========================================================
+   PHONE APP
+========================================================= */
+
+.phoneApp{
+  position:absolute;
+  inset:0;
+  z-index:30;
+  padding:43px 15px 15px;
+  overflow:auto;
+  background:#080d15;
+}
+
+.appHeader{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:18px;
+}
+
+.appBack{
+  width:37px;
+  height:37px;
+  border-radius:12px;
+  background:#172231;
+}
+
+.appHeader h3{
+  margin:0;
+  font-size:18px;
+}
+
+.appContent{
+  padding-bottom:20px;
+}
+
+/* =========================================================
+   APP COMPONENTS
+========================================================= */
+
+.card{
+  padding:15px;
+  margin-bottom:10px;
+  border-radius:18px;
+  border:1px solid var(--line);
+  background:#101927;
 }
 
 .row{
   display:flex;
-  gap:6px
-}
-
-button,input{
-  font-size:16px;
-  border-radius:8px;
-  border:0;
-  padding:10px
-}
-
-button{
-  background:#16a34a;
-  color:#fff;
-  font-weight:600;
-  cursor:pointer
-}
-
-button:disabled{
-  opacity:.6;
-  cursor:not-allowed
-}
-
-#msg{
-  flex:1;
-  min-width:0
-}
-
-/* =========================
-   FRONT PAGE
-   ========================= */
-
-#join{
-  position:fixed;
-  inset:0;
-  z-index:2000;
-  overflow:auto;
-  color:#fff;
-  background:linear-gradient(
-    180deg,
-    #052e16 0%,
-    #0f6b3a 45%,
-    #f59e0b 100%
-  );
-  display:flex;
-  flex-direction:column;
   align-items:center;
-  isolation:isolate;
-}
-
-#join:before{
-  content:"";
-  position:absolute;
-  inset:0;
-  opacity:.12;
-  background:
-    repeating-conic-gradient(
-      from 45deg at 50% 50%,
-      #fff 0 12.5%,
-      transparent 0 25%
-    ) 0 0/46px 46px;
-  z-index:-1;
-}
-
-.sun{
-  position:absolute;
-  top:21%;
-  left:50%;
-  width:190px;
-  height:190px;
-  margin-left:-95px;
-  border-radius:50%;
-  background:
-    radial-gradient(
-      circle,
-      #fde68a,
-      #f59e0b 55%,
-      transparent 72%
-    );
-  filter:blur(2px);
-  animation:glow 5s ease-in-out infinite;
-  z-index:-1;
-}
-
-@keyframes glow{
-  50%{
-    transform:scale(1.08);
-    opacity:.85
-  }
-}
-
-.brand{
-  position:relative;
-  z-index:2;
-  text-align:center;
-  margin-top:7vh;
-  padding:0 16px
-}
-
-.brand small{
-  letter-spacing:.35em;
-  font-size:12px;
-  opacity:.9
-}
-
-.brand h1{
-  margin:6px 0 2px;
-  font-size:clamp(44px,15vw,76px);
-  line-height:.9;
-  font-weight:900;
-  letter-spacing:-1px;
-  text-shadow:
-    0 4px 0 #052e16,
-    0 10px 24px #0008
-}
-
-.brand h1 span{
-  color:#fde68a
-}
-
-.brand p{
-  margin:8px 0 0;
-  font-size:15px;
-  opacity:.95
-}
-
-.sky{
-  position:relative;
-  z-index:1;
-  width:100%;
-  max-width:520px;
-  margin-top:auto
-}
-
-.sky svg{
-  display:block;
-  width:100%
-}
-
-.bus{
-  position:absolute;
-  bottom:6px;
-  left:-70px;
-  font-size:34px;
-  animation:drive 14s linear infinite
-}
-
-@keyframes drive{
-  to{
-    left:105%
-  }
-}
-
-.wrap{
-  position:relative;
-  z-index:5;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  width:100%;
-  margin-top:auto
-}
-
-/* =========================
-   ACCOUNT CARD
-   ========================= */
-
-.card{
-  position:relative;
-  z-index:20;
-  width:min(92vw,380px);
-  margin:0 0 18px;
-  padding:18px;
-  border-radius:20px;
-  background:#ffffffee;
-  color:#052e16;
-  box-shadow:0 20px 50px #0006;
-  display:flex;
-  flex-direction:column;
+  justify-content:space-between;
   gap:10px;
-  isolation:isolate
 }
 
-.card h2{
-  margin:0;
-  text-align:center;
-  font-size:25px
+.muted{
+  color:var(--muted);
 }
 
-.card .subtitle{
-  margin:-4px 0 4px;
-  text-align:center;
-  font-size:13px;
-  color:#365314
+.small{
+  font-size:11px;
 }
 
-.account-input{
-  position:relative;
-  z-index:30;
-  display:block;
-  width:100%;
-  height:52px;
-  border:2px solid #bbf7d0 !important;
-  border-radius:12px;
-  padding:13px 14px;
-  font-size:17px;
-  font-family:inherit;
-  outline:none;
-  background:#fff !important;
-  color:#000 !important;
-  -webkit-text-fill-color:#000 !important;
-  caret-color:#000 !important;
-  opacity:1 !important;
-  pointer-events:auto !important;
-  user-select:text !important;
-  -webkit-user-select:text !important;
-  touch-action:manipulation;
-  appearance:none;
-  -webkit-appearance:none;
-}
-
-.account-input::placeholder{
-  color:#6b7280 !important;
-  -webkit-text-fill-color:#6b7280 !important;
-  opacity:1
-}
-
-.account-input:focus{
-  border-color:#16a34a !important;
-  box-shadow:0 0 0 3px #16a34a22
-}
-
-.passwordBox{
-  position:relative;
-  z-index:30;
-  width:100%
-}
-
-.passwordBox .account-input{
-  padding-right:82px
-}
-
-.showPassword{
-  position:absolute;
-  z-index:40;
-  right:8px;
-  top:7px;
-  height:38px;
-  padding:7px 10px;
-  border-radius:9px;
-  background:#ecfdf5;
-  color:#166534;
-  font-size:13px;
-  font-weight:800;
-  border:1px solid #bbf7d0;
-  cursor:pointer
-}
-
-.showPassword:active{
-  transform:scale(.97)
-}
-
-.forgotRow{
-  display:flex;
-  justify-content:flex-end;
-  margin-top:-3px
-}
-
-#forgotButton{
-  background:none;
-  color:#15803d;
-  padding:2px 0;
-  font-size:13px;
-  font-weight:800;
-  border-radius:0
-}
-
-#forgotButton:hover{
-  text-decoration:underline
-}
-
-#accountButton{
-  position:relative;
-  z-index:30;
-  background:linear-gradient(90deg,#16a34a,#f59e0b);
-  font-size:18px;
-  padding:14px;
-  border-radius:14px;
-  box-shadow:0 6px 0 #14532d
-}
-
-#accountButton:active{
-  transform:translateY(3px);
-  box-shadow:0 3px 0 #14532d
-}
-
-.googleButton{
-  position:relative;
-  z-index:30;
-  background:#fff;
-  color:#111827;
-  border:1px solid #d1d5db;
-  box-shadow:0 2px 5px #0002;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:9px;
-  padding:12px
-}
-
-.googleButton:hover{
-  background:#f9fafb
-}
-
-.googleIcon{
-  width:20px;
-  height:20px;
+.bigNumber{
+  font-size:29px;
   font-weight:900;
-  font-size:19px
 }
 
-.divider{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  color:#6b7280;
-  font-size:12px
+.green{
+  color:var(--green);
 }
 
-.divider:before,
-.divider:after{
-  content:"";
-  height:1px;
-  background:#d1d5db;
-  flex:1
+.red{
+  color:var(--red);
 }
 
-.switch{
-  text-align:center;
-  font-size:14px;
-  color:#374151
+.blue{
+  color:var(--blue);
 }
 
-.switch button{
-  background:none;
-  color:#15803d;
-  padding:0;
-  font-size:14px;
-  font-weight:800
+.purple{
+  color:var(--purple);
 }
 
-#accountError{
-  min-height:18px;
-  text-align:center;
-  color:#b91c1c;
-  font-size:13px;
-  font-weight:600
-}
-
-.card small{
-  text-align:center;
-  opacity:.7
-}
-
-.hidden{
-  display:none!important
-}
-
-/* =========================
-   FORGOT PASSWORD
-   ========================= */
-
-#forgotBox{
-  position:fixed;
-  inset:0;
-  z-index:5000;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
-  background:#0009;
-}
-
-#forgotBox.visible{
-  display:flex
-}
-
-.forgotCard{
-  width:min(92vw,380px);
-  background:#fff;
-  color:#052e16;
-  border-radius:20px;
-  padding:22px;
-  box-shadow:0 20px 60px #0008;
-}
-
-.forgotCard h2{
-  margin:0 0 8px;
-  text-align:center
-}
-
-.forgotCard p{
-  font-size:14px;
-  line-height:1.5;
-  color:#374151;
-  text-align:center
-}
-
-.forgotCard input{
+.appAction{
   width:100%;
-  height:50px;
-  border:2px solid #bbf7d0;
-  color:#000;
-  background:#fff;
-  padding:12px;
-  outline:none
+  padding:13px;
+  border-radius:13px;
+  background:#182536;
+  margin-top:9px;
+  text-align:center;
 }
 
-.forgotCard input:focus{
-  border-color:#16a34a;
-  box-shadow:0 0 0 3px #16a34a22
+.appAction.primaryAction{
+  background:linear-gradient(135deg,var(--green),#14b9e8);
+  color:#03100b;
+  font-weight:900;
 }
 
-.forgotActions{
+.appInput{
+  width:100%;
+  padding:13px;
+  border-radius:13px;
+  background:#080d15;
+  border:1px solid var(--line);
+  color:white;
+  outline:none;
+  margin-top:8px;
+}
+
+.progress{
+  height:7px;
+  border-radius:10px;
+  background:#1d2735;
+  overflow:hidden;
+  margin-top:8px;
+}
+
+.progress i{
+  display:block;
+  height:100%;
+  width:50%;
+  background:linear-gradient(90deg,var(--green),var(--cyan));
+}
+
+.listItem{
   display:flex;
+  align-items:center;
+  gap:11px;
+  padding:12px 0;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.listItem:last-child{
+  border-bottom:0;
+}
+
+.listAvatar{
+  width:39px;
+  height:39px;
+  border-radius:13px;
+  display:grid;
+  place-items:center;
+  font-weight:900;
+  background:#24334b;
+}
+
+/* =========================================================
+   CHAT
+========================================================= */
+
+.chatMessages{
+  height:370px;
+  overflow:auto;
+  padding:8px;
+  border-radius:17px;
+  background:#080d15;
+}
+
+.message{
+  max-width:82%;
+  padding:9px 11px;
+  border-radius:15px;
+  margin-bottom:8px;
+  background:#182536;
+}
+
+.message.mine{
+  margin-left:auto;
+  background:#124c3a;
+}
+
+.message b{
+  display:block;
+  font-size:10px;
+  margin-bottom:3px;
+}
+
+.message p{
+  margin:0;
+  font-size:12px;
+  line-height:1.4;
+}
+
+.chatComposer{
+  display:flex;
+  gap:7px;
+  margin-top:8px;
+}
+
+.chatComposer input{
+  flex:1;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#080d15;
+  color:white;
+  outline:none;
+}
+
+.send{
+  width:48px;
+  border-radius:14px;
+  background:var(--green);
+  color:#04110b;
+  font-weight:900;
+}
+
+/* =========================================================
+   VOICE
+========================================================= */
+
+.voiceHero{
+  padding:22px;
+  text-align:center;
+  border-radius:22px;
+  background:
+    radial-gradient(circle at center,rgba(37,227,138,.20),transparent 55%),
+    #101927;
+}
+
+.voiceOrb{
+  width:105px;
+  height:105px;
+  margin:10px auto 18px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  font-size:42px;
+  background:#162538;
+  border:2px solid rgba(37,227,138,.45);
+}
+
+.voiceOrb.active{
+  animation:pulse 1.3s infinite;
+}
+
+@keyframes pulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(37,227,138,.3)}
+  50%{box-shadow:0 0 0 22px rgba(37,227,138,0)}
+}
+
+.voiceButtons{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin-top:15px;
+}
+
+.voiceButton{
+  width:55px;
+  height:55px;
+  border-radius:18px;
+  background:#1b293b;
+}
+
+.voiceButton.active{
+  background:var(--green);
+  color:#06130c;
+}
+
+.participants{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
   gap:8px;
-  margin-top:12px
+  margin-top:15px;
 }
 
-.forgotActions button{
-  flex:1
+.participant{
+  text-align:center;
+  font-size:9px;
 }
 
-#closeForgot{
-  background:#e5e7eb;
-  color:#111827
+.participant .listAvatar{
+  margin:auto auto 5px;
 }
 
-/* =========================
-   MOBILE
-   ========================= */
+/* =========================================================
+   GAME / BETTING
+========================================================= */
 
-@media(max-height:700px){
-  .brand{
-    margin-top:3vh
+.gameChoice{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+}
+
+.gameChoice button{
+  min-height:105px;
+  border-radius:18px;
+  background:#131f2f;
+  border:1px solid var(--line);
+}
+
+.gameChoice button strong{
+  display:block;
+  margin-top:8px;
+}
+
+.betOdds{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-top:10px;
+}
+
+.odds{
+  padding:12px;
+  border-radius:13px;
+  text-align:center;
+  background:#172334;
+}
+
+.odds.selected{
+  outline:2px solid var(--green);
+}
+
+.odds b{
+  display:block;
+  font-size:16px;
+  color:var(--green);
+}
+
+/* =========================================================
+   NOTIFICATIONS
+========================================================= */
+
+#toastBox{
+  position:absolute;
+  z-index:10000;
+  left:12px;
+  right:12px;
+  top:82px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:7px;
+  pointer-events:none;
+}
+
+.toast{
+  max-width:360px;
+  padding:11px 14px;
+  border-radius:14px;
+  background:#111c2b;
+  border:1px solid var(--line);
+  box-shadow:var(--shadow);
+  font-size:12px;
+  animation:toastIn .25s ease;
+}
+
+@keyframes toastIn{
+  from{opacity:0;transform:translateY(-10px)}
+  to{opacity:1;transform:none}
+}
+
+/* =========================================================
+   PLAYER MARKER
+========================================================= */
+
+.playerMarker{
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  border:3px solid white;
+  display:grid;
+  place-items:center;
+  color:white;
+  font-size:12px;
+  font-weight:900;
+  box-shadow:0 4px 20px rgba(0,0,0,.4);
+}
+
+/* =========================================================
+   DESKTOP
+========================================================= */
+
+@media(min-width:800px){
+
+  .bottomNav{
+    left:50%;
+    right:auto;
+    transform:translateX(-50%);
+    width:560px;
   }
 
-  .brand h1{
-    font-size:50px
+  .quickActions{
+    bottom:90px;
   }
 
-  .sun{
-    top:15%
+  .panel{
+    align-items:center;
   }
 
-  .card{
-    margin-bottom:10px;
-    padding:14px
+  .panelCard{
+    border-radius:27px;
+    max-height:85vh;
   }
+
+}
+
+/* =========================================================
+   LEAFLET
+========================================================= */
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip{
+  background:#101927;
+  color:white;
+}
+
+.leaflet-popup-content{
+  margin:12px;
+  font-size:12px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- =========================
-     LOGIN / SIGNUP
-     ========================= -->
+<!-- =======================================================
+     AUTH
+======================================================= -->
 
-<div id="join">
+<section id="authScreen">
 
-  <div class="sun"></div>
+  <div class="authBox">
 
-  <div class="brand">
-    <small>🇳🇬 THE CITY OF 7 HILLS 🇳🇬</small>
-
-    <h1>
-      IBADAN<br>
-      <span>LIFE</span>
-    </h1>
-
-    <p>
-      Work. Ride danfo. Make friends. Live your Ibadan story.
-    </p>
-  </div>
-
-  <div class="wrap">
-
-    <div class="sky">
-
-      <svg viewBox="0 0 400 130" preserveAspectRatio="none">
-
-        <g fill="#052e16">
-
-          <path d="M0 130V92l25-9 22 8 20-12 24 10 18-8 26 9 22-11 25 10 20-9 28 11 24-8 26 9 22-10 24 9 22-8V130z"
-            opacity=".55"/>
-
-          <rect x="170" y="18" width="16" height="90"/>
-          <rect x="164" y="10" width="28" height="12" rx="2"/>
-          <rect x="176" y="2" width="4" height="10"/>
-
-          <rect x="215" y="40" width="34" height="70"/>
-          <rect x="60" y="62" width="40" height="48"/>
-
-          <path d="M0 130V100l18-6 16 5 20-8 18 7 22-6 20 7 24-6 22 6 18-5 22 6 24-5 20 5 22-5 26 6 24-5 20 4 24-4 20 5 0 31z"/>
-
-        </g>
-
-        <g fill="#fde68a" opacity=".85">
-
-          <rect x="222" y="48" width="5" height="6"/>
-          <rect x="233" y="48" width="5" height="6"/>
-          <rect x="222" y="62" width="5" height="6"/>
-          <rect x="233" y="62" width="5" height="6"/>
-          <rect x="70" y="72" width="5" height="6"/>
-          <rect x="84" y="72" width="5" height="6"/>
-          <rect x="176" y="40" width="4" height="6"/>
-
-        </g>
-
-      </svg>
-
-      <div class="bus">🚌</div>
-
+    <div class="logo">
+      <div class="logoMark">🌆</div>
+      <div>
+        <h1>Ibadan Life</h1>
+        <small>Live. Work. Connect. Build your city life.</small>
+      </div>
     </div>
 
-    <div class="card" id="loginCard">
+    <div class="authTabs">
+      <button id="loginTab" class="active" onclick="showAuth('login')">
+        Login
+      </button>
+      <button id="signupTab" onclick="showAuth('signup')">
+        Create account
+      </button>
+    </div>
 
-      <h2 id="accountTitle">
-        Welcome Back
-      </h2>
+    <div id="loginForm">
 
-      <div class="subtitle" id="accountSubtitle">
-        Sign in to continue your Ibadan story
+      <div class="field">
+        <label>Email or username</label>
+        <input id="loginIdentity"
+               autocomplete="username"
+               placeholder="Enter username or email">
       </div>
 
-      <input
-        id="username"
-        class="account-input"
-        type="text"
-        placeholder="Username"
-        maxlength="16"
-        autocomplete="username"
-        autocapitalize="none"
-        autocorrect="off"
-        spellcheck="false"
-        inputmode="text"
-      >
-
-      <!-- NEW: EMAIL FOR SIGNUP -->
-      <input
-        id="email"
-        class="account-input hidden"
-        type="email"
-        placeholder="Email address"
-        maxlength="254"
-        autocomplete="email"
-        autocapitalize="none"
-        autocorrect="off"
-        spellcheck="false"
-        inputmode="email"
-      >
-
-      <div class="passwordBox">
-
-        <input
-          id="password"
-          class="account-input"
-          type="password"
-          placeholder="Password"
-          maxlength="72"
-          autocomplete="current-password"
-          autocapitalize="none"
-          autocorrect="off"
-          spellcheck="false"
-        >
-
-        <button
-          type="button"
-          class="showPassword"
-          id="showPassword"
-        >
-          Show
-        </button>
-
+      <div class="field">
+        <label>Password</label>
+        <input id="loginPassword"
+               type="password"
+               autocomplete="current-password"
+               placeholder="Password">
       </div>
 
-      <div
-        class="passwordBox hidden"
-        id="confirmPasswordBox"
-      >
-
-        <input
-          id="confirmPassword"
-          class="account-input"
-          type="password"
-          placeholder="Confirm password"
-          maxlength="72"
-          autocomplete="new-password"
-          autocapitalize="none"
-          autocorrect="off"
-          spellcheck="false"
-        >
-
-        <button
-          type="button"
-          class="showPassword"
-          id="showConfirmPassword"
-        >
-          Show
-        </button>
-
-      </div>
-
-      <div class="forgotRow" id="forgotRow">
-
-        <button
-          type="button"
-          id="forgotButton"
-        >
-          Forgot password?
-        </button>
-
-      </div>
-
-      <div id="accountError"></div>
-
-      <button id="accountButton">
-        Sign In
+      <button class="primary" onclick="login()">
+        Enter Ibadan Life
       </button>
 
-      <div class="divider">
-        OR
-      </div>
-
-      <button
-        class="googleButton"
-        id="googleButton"
-        type="button"
-      >
-        <span class="googleIcon">G</span>
+      <button class="google" onclick="googleLogin()">
         Continue with Google
       </button>
 
-      <div class="switch">
+      <div style="text-align:center;margin-top:13px">
+        <button onclick="recoverPassword()"
+                style="background:none;color:#8794a8;font-size:12px">
+          Forgot password?
+        </button>
+      </div>
 
-        <span id="switchText">
-          Don't have an account?
-        </span>
+    </div>
 
-        <button
-          id="switchButton"
-          type="button"
-        >
-          Create Account
+    <div id="signupForm" class="hidden">
+
+      <div class="field">
+        <label>Username</label>
+        <input id="signupUsername"
+               placeholder="Choose your username">
+      </div>
+
+      <div class="field">
+        <label>Name</label>
+        <input id="signupName"
+               placeholder="Your display name">
+      </div>
+
+      <div class="field">
+        <label>Email</label>
+        <input id="signupEmail"
+               type="email"
+               placeholder="you@example.com">
+      </div>
+
+      <div class="field">
+        <label>Password</label>
+        <input id="signupPassword"
+               type="password"
+               placeholder="Create a password">
+      </div>
+
+      <button class="primary" onclick="signup()">
+        Create My City Life
+      </button>
+
+    </div>
+
+    <div id="authMsg" class="authMsg"></div>
+
+  </div>
+
+</section>
+
+
+<!-- =======================================================
+     GAME
+======================================================= -->
+
+<section id="game" class="hidden">
+
+  <div id="map"></div>
+
+  <!-- TOP HUD -->
+  <div class="topHUD">
+
+    <button class="playerMini" onclick="openPhoneApp('profile')">
+
+      <div id="hudAvatar" class="avatar">?</div>
+
+      <div>
+        <div id="hudName" class="playerName">Player</div>
+        <div id="hudLevel" class="level">Level 1</div>
+      </div>
+
+    </button>
+
+    <div class="stats">
+
+      <div class="stat money">
+        💵 <b id="hudMoney">₦0</b>
+      </div>
+
+      <div class="stat energy">
+        ⚡ <b id="hudEnergy">100</b>
+      </div>
+
+      <div class="stat xp">
+        ⭐ <b id="hudXP">0 XP</b>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- WORLD CARD -->
+
+  <div class="worldCard">
+
+    <div class="worldTitle">
+      <span>🌆 Ibadan Live</span>
+      <span class="liveDot"></span>
+    </div>
+
+    <div id="worldText" class="worldText">
+      Welcome to Ibadan Life.
+    </div>
+
+  </div>
+
+
+  <!-- MAP CONTROLS -->
+
+  <div class="mapControls">
+
+    <button class="mapBtn"
+            onclick="locatePlayer()">
+      📍
+    </button>
+
+    <button class="mapBtn"
+            onclick="zoomIn()">
+      +
+    </button>
+
+    <button class="mapBtn"
+            onclick="zoomOut()">
+      −
+    </button>
+
+    <button class="mapBtn"
+            onclick="openPhoneApp('map')">
+      🗺️
+    </button>
+
+  </div>
+
+
+  <!-- QUICK ACTIONS -->
+
+  <div class="quickActions">
+
+    <button class="quick" onclick="doAction('work')">
+      <span>💼</span>
+      Work
+    </button>
+
+    <button class="quick" onclick="doAction('ride')">
+      <span>🚌</span>
+      Ride
+    </button>
+
+    <button class="quick" onclick="doAction('eat')">
+      <span>🍲</span>
+      Eat
+    </button>
+
+    <button class="quick" onclick="openPhoneApp('voice')">
+      <span>🎙️</span>
+      Talk
+    </button>
+
+  </div>
+
+
+  <!-- BOTTOM NAV -->
+
+  <nav class="bottomNav">
+
+    <button class="navBtn active" onclick="navHome(this)">
+      <span>🏠</span>
+      Home
+    </button>
+
+    <button class="navBtn" onclick="navMap(this)">
+      <span>🗺️</span>
+      Map
+    </button>
+
+    <button class="navBtn" onclick="openPhoneApp('social')">
+      <span>👥</span>
+      Social
+    </button>
+
+    <button class="navBtn" onclick="openPhoneApp('inventory')">
+      <span>🎒</span>
+      Bag
+    </button>
+
+    <button class="navBtn phoneNav" onclick="openPhone()">
+      <span>📱</span>
+      Phone
+      <i id="phoneBadge" class="notificationBadge hidden">1</i>
+    </button>
+
+  </nav>
+
+
+  <!-- =====================================================
+       PHONE
+  ====================================================== -->
+
+  <div id="phonePanel"
+       class="panel phonePanel hidden">
+
+    <div class="phone">
+
+      <div class="phoneNotch"></div>
+
+      <div class="phoneStatus">
+        <span id="phoneTime">12:00</span>
+        <span>📶 🔋</span>
+      </div>
+
+
+      <!-- PHONE HOME -->
+
+      <div id="phoneHome" class="phoneHome">
+
+        <div class="phoneGreeting">
+
+          <small>Welcome back</small>
+
+          <h2 id="phoneName">
+            Player
+          </h2>
+
+          <div id="phoneDate" class="phoneDate">
+            Ibadan Life
+          </div>
+
+        </div>
+
+
+        <div class="phoneWidgets">
+
+          <div class="phoneWidget">
+            <small>Wallet</small>
+            <div class="big green" id="phoneMoney">
+              ₦0
+            </div>
+          </div>
+
+          <div class="phoneWidget">
+            <small>Energy</small>
+            <div class="big" id="phoneEnergy">
+              ⚡100
+            </div>
+          </div>
+
+        </div>
+
+
+        <div class="appGrid">
+
+          <button class="app" onclick="openPhoneApp('messages')">
+            <div class="appIcon">💬</div>
+            Messages
+            <i class="appBadge">2</i>
+          </button>
+
+          <button class="app" onclick="openPhoneApp('calls')">
+            <div class="appIcon">📞</div>
+            Calls
+          </button>
+
+          <button class="app" onclick="openPhoneApp('social')">
+            <div class="appIcon">👥</div>
+            Social
+          </button>
+
+          <button class="app" onclick="openPhoneApp('voice')">
+            <div class="appIcon">🎙️</div>
+            Voice
+          </button>
+
+          <button class="app" onclick="openPhoneApp('games')">
+            <div class="appIcon">🎮</div>
+            Games
+          </button>
+
+          <button class="app" onclick="openPhoneApp('bet')">
+            <div class="appIcon">🏆</div>
+            Bet
+          </button>
+
+          <button class="app" onclick="openPhoneApp('bank')">
+            <div class="appIcon">🏦</div>
+            Bank
+          </button>
+
+          <button class="app" onclick="openPhoneApp('market')">
+            <div class="appIcon">🛒</div>
+            Market
+          </button>
+
+          <button class="app" onclick="openPhoneApp('jobs')">
+            <div class="appIcon">💼</div>
+            Jobs
+          </button>
+
+          <button class="app" onclick="openPhoneApp('transport')">
+            <div class="appIcon">🚕</div>
+            Transport
+          </button>
+
+          <button class="app" onclick="openPhoneApp('property')">
+            <div class="appIcon">🏠</div>
+            Property
+          </button>
+
+          <button class="app" onclick="openPhoneApp('events')">
+            <div class="appIcon">🎉</div>
+            Events
+          </button>
+
+          <button class="app" onclick="openPhoneApp('map')">
+            <div class="appIcon">📍</div>
+            Map
+          </button>
+
+          <button class="app" onclick="openPhoneApp('news')">
+            <div class="appIcon">📰</div>
+            News
+          </button>
+
+          <button class="app" onclick="openPhoneApp('rewards')">
+            <div class="appIcon">🎁</div>
+            Rewards
+          </button>
+
+          <button class="app" onclick="openPhoneApp('profile')">
+            <div class="appIcon">⚙️</div>
+            Profile
+          </button>
+
+        </div>
+
+
+        <div class="phoneDock">
+
+          <button class="dockBtn"
+                  onclick="openPhoneApp('calls')">
+            📞
+            <small>Calls</small>
+          </button>
+
+          <button class="dockBtn"
+                  onclick="openPhoneApp('messages')">
+            💬
+            <small>Chat</small>
+          </button>
+
+          <button class="dockBtn"
+                  onclick="openPhoneApp('map')">
+            🗺️
+            <small>Map</small>
+          </button>
+
+          <button class="dockBtn"
+                  onclick="closePhone()">
+            ⌄
+            <small>Close</small>
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- PHONE APP CONTAINER -->
+
+      <div id="phoneApp"
+           class="phoneApp hidden">
+
+        <div class="appHeader">
+
+          <button class="appBack"
+                  onclick="phoneBack()">
+            ←
+          </button>
+
+          <h3 id="appTitle">
+            App
+          </h3>
+
+        </div>
+
+        <div id="appContent"
+             class="appContent">
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       TOAST
+  ====================================================== -->
+
+  <div id="toastBox"></div>
+
+</section>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+/* =========================================================
+   GLOBAL STATE
+========================================================= */
+
+let socket = null;
+let map = null;
+let me = null;
+
+let playerMarkers = {};
+let npcMarkers = [];
+let busMarkers = [];
+
+let currentPhoneApp = null;
+let selectedBet = null;
+let selectedVoiceRoom = "Ibadan City";
+let micStream = null;
+let micEnabled = false;
+
+const appTitles = {
+  messages:"Messages",
+  calls:"Calls",
+  social:"Social",
+  voice:"Voice Rooms",
+  games:"Games",
+  bet:"Ibadan Bet",
+  bank:"My Bank",
+  market:"Market",
+  jobs:"Jobs",
+  transport:"Transport",
+  property:"Property",
+  events:"Events",
+  map:"City Map",
+  news:"Ibadan News",
+  rewards:"Rewards",
+  profile:"My Profile",
+  inventory:"Inventory"
+};
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function $(id){
+  return document.getElementById(id);
+}
+
+function money(n){
+  return "₦" + Number(n || 0).toLocaleString();
+}
+
+function escapeHTML(value){
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function initials(name){
+  return String(name || "P")
+    .trim()
+    .slice(0,2)
+    .toUpperCase();
+}
+
+function toast(message){
+  const box = $("toastBox");
+
+  const item = document.createElement("div");
+  item.className = "toast";
+  item.textContent = message;
+
+  box.appendChild(item);
+
+  setTimeout(()=>{
+    item.remove();
+  },3200);
+}
+
+
+/* =========================================================
+   AUTH
+========================================================= */
+
+function showAuth(type){
+
+  const login = type === "login";
+
+  $("loginForm").classList.toggle("hidden",!login);
+  $("signupForm").classList.toggle("hidden",login);
+
+  $("loginTab").classList.toggle("active",login);
+  $("signupTab").classList.toggle("active",!login);
+
+  $("authMsg").textContent = "";
+}
+
+async function api(url,options={}){
+  const response = await fetch(url,{
+    headers:{
+      "Content-Type":"application/json",
+      ...(options.headers || {})
+    },
+    ...options
+  });
+
+  const data = await response.json().catch(()=>({}));
+
+  if(!response.ok){
+    throw new Error(data.error || "Request failed");
+  }
+
+  return data;
+}
+
+async function login(){
+
+  const identity = $("loginIdentity").value.trim();
+  const password = $("loginPassword").value;
+
+  if(!identity || !password){
+    $("authMsg").textContent = "Enter your login details.";
+    return;
+  }
+
+  try{
+
+    $("authMsg").textContent = "Signing in...";
+
+    const data = await api("/api/auth/login",{
+      method:"POST",
+      body:JSON.stringify({
+        identity,
+        password
+      })
+    });
+
+    if(data.token){
+      localStorage.setItem("ibadan_token",data.token);
+    }
+
+    await startGame();
+
+  }catch(err){
+    $("authMsg").textContent = err.message;
+  }
+}
+
+async function signup(){
+
+  const username = $("signupUsername").value.trim();
+  const name = $("signupName").value.trim();
+  const email = $("signupEmail").value.trim();
+  const password = $("signupPassword").value;
+
+  if(!username || !name || !email || !password){
+    $("authMsg").textContent = "Complete all fields.";
+    return;
+  }
+
+  try{
+
+    $("authMsg").textContent = "Creating your city life...";
+
+    const data = await api("/api/auth/signup",{
+      method:"POST",
+      body:JSON.stringify({
+        username,
+        name,
+        email,
+        password
+      })
+    });
+
+    if(data.token){
+      localStorage.setItem("ibadan_token",data.token);
+    }
+
+    await startGame();
+
+  }catch(err){
+    $("authMsg").textContent = err.message;
+  }
+}
+
+async function recoverPassword(){
+
+  const email = prompt("Enter your email:");
+
+  if(!email) return;
+
+  try{
+
+    await api("/api/auth/recovery",{
+      method:"POST",
+      body:JSON.stringify({email})
+    });
+
+    toast("Recovery request sent.");
+
+  }catch(err){
+    toast(err.message);
+  }
+}
+
+function googleLogin(){
+
+  window.location.href = "/api/auth/google";
+}
+
+
+/* =========================================================
+   START GAME
+========================================================= */
+
+async function startGame(){
+
+  try{
+
+    const token = localStorage.getItem("ibadan_token");
+
+    if(!token){
+      throw new Error("No login token.");
+    }
+
+    const response = await fetch("/api/auth/me",{
+      headers:{
+        Authorization:"Bearer " + token
+      }
+    });
+
+    if(!response.ok){
+      throw new Error("Session expired.");
+    }
+
+    const data = await response.json();
+
+    me = data.player || data.user || data;
+
+    $("authScreen").classList.add("hidden");
+    $("game").classList.remove("hidden");
+
+    initMap();
+    initSocket();
+    updateHUD();
+
+  }catch(err){
+
+    localStorage.removeItem("ibadan_token");
+
+    $("authMsg").textContent =
+      err.message || "Please login again.";
+  }
+}
+
+
+/* =========================================================
+   MAP
+========================================================= */
+
+function initMap(){
+
+  if(map) return;
+
+  map = L.map("map",{
+    zoomControl:false,
+    attributionControl:true
+  }).setView(
+    [
+      Number(me?.lat || 7.3900),
+      Number(me?.lng || 3.9100)
+    ],
+    13
+  );
+
+  L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+      maxZoom:19,
+      attribution:"© OpenStreetMap"
+    }
+  ).addTo(map);
+
+  map.on("click",e=>{
+
+    if(socket){
+      socket.emit("moveTo",{
+        lat:e.latlng.lat,
+        lng:e.latlng.lng
+      });
+    }
+
+  });
+}
+
+function locatePlayer(){
+
+  if(!map || !me) return;
+
+  map.flyTo(
+    [
+      Number(me.lat || 7.39),
+      Number(me.lng || 3.91)
+    ],
+    16,
+    {
+      duration:1
+    }
+  );
+}
+
+function zoomIn(){
+  if(map) map.zoomIn();
+}
+
+function zoomOut(){
+  if(map) map.zoomOut();
+}
+
+
+/* =========================================================
+   SOCKET
+========================================================= */
+
+function initSocket(){
+
+  if(socket) return;
+
+  socket = io({
+    auth:{
+      token:localStorage.getItem("ibadan_token")
+    }
+  });
+
+  socket.on("connect",()=>{
+    toast("Connected to Ibadan Life.");
+  });
+
+  socket.on("connect_error",err=>{
+    toast("Connection problem: " + err.message);
+  });
+
+  socket.on("places",places=>{
+    renderPlaces(places);
+  });
+
+  socket.on("me",data=>{
+    me = data.player || data;
+    updateHUD();
+  });
+
+  socket.on("state",data=>{
+    me = data.player || data;
+    updateHUD();
+  });
+
+  socket.on("world",world=>{
+    renderWorld(world);
+  });
+
+  socket.on("chat",message=>{
+    addChatMessage(message);
+  });
+
+  /*
+    These are ready for the advanced voice backend.
+  */
+
+  socket.on("voice:user-joined",data=>{
+    toast(
+      (data.name || "Someone") +
+      " joined the voice room."
+    );
+  });
+
+  socket.on("voice:user-left",data=>{
+    toast(
+      (data.name || "Someone") +
+      " left the voice room."
+    );
+  });
+
+  socket.on("voice:status",data=>{
+    if(data){
+      toast(data.message || "Voice updated.");
+    }
+  });
+}
+
+
+/* =========================================================
+   WORLD
+========================================================= */
+
+function renderWorld(world){
+
+  if(!world) return;
+
+  if(world.hour !== undefined){
+
+    $("worldText").textContent =
+      "Ibadan time • " +
+      String(world.hour).padStart(2,"0") +
+      ":00";
+  }
+
+  /*
+    NPCs
+  */
+
+  npcMarkers.forEach(m=>{
+    if(map) map.removeLayer(m);
+  });
+
+  npcMarkers = [];
+
+  if(Array.isArray(world.npcs)){
+
+    world.npcs.forEach(npc=>{
+
+      if(!npc.lat || !npc.lng) return;
+
+      const marker = L.circleMarker(
+        [npc.lat,npc.lng],
+        {
+          radius:6,
+          color:"#ffad42",
+          fillColor:"#ffad42",
+          fillOpacity:.9
+        }
+      ).addTo(map);
+
+      marker.bindPopup(
+        "<b>" +
+        escapeHTML(npc.name || "NPC") +
+        "</b>"
+      );
+
+      npcMarkers.push(marker);
+    });
+  }
+
+  /*
+    Buses
+  */
+
+  busMarkers.forEach(m=>{
+    if(map) map.removeLayer(m);
+  });
+
+  busMarkers = [];
+
+  if(Array.isArray(world.buses)){
+
+    world.buses.forEach(bus=>{
+
+      if(!bus.lat || !bus.lng) return;
+
+      const marker = L.marker(
+        [bus.lat,bus.lng],
+        {
+          icon:L.divIcon({
+            className:"",
+            html:
+              '<div style="' +
+              'width:34px;height:34px;' +
+              'border-radius:12px;' +
+              'background:#16263a;' +
+              'border:2px solid #25d9ff;' +
+              'display:grid;place-items:center;' +
+              'font-size:18px;">🚌</div>',
+            iconSize:[34,34],
+            iconAnchor:[17,17]
+          })
+        }
+      ).addTo(map);
+
+      marker.bindPopup(
+        "<b>Danfo</b><br>Public transport"
+      );
+
+      busMarkers.push(marker);
+    });
+  }
+}
+
+
+/* =========================================================
+   PLACES / OTHER PLAYERS
+========================================================= */
+
+function renderPlaces(data){
+
+  /*
+    Supports several backend shapes.
+  */
+
+  const players =
+    data?.players ||
+    data?.nearby ||
+    [];
+
+  Object.keys(playerMarkers).forEach(id=>{
+
+    if(!players.find(p=>String(p.id)===String(id))){
+
+      map.removeLayer(playerMarkers[id]);
+      delete playerMarkers[id];
+    }
+
+  });
+
+  players.forEach(player=>{
+
+    if(!player.lat || !player.lng) return;
+
+    if(String(player.id) === String(me?.id)){
+      return;
+    }
+
+    const color =
+      player.color ||
+      "#4b8cff";
+
+    const icon = L.divIcon({
+
+      className:"",
+
+      html:
+        '<div class="playerMarker" style="background:' +
+        escapeHTML(color) +
+        '">' +
+        escapeHTML(initials(player.name || player.username)) +
+        "</div>",
+
+      iconSize:[38,38],
+      iconAnchor:[19,19]
+
+    });
+
+    if(playerMarkers[player.id]){
+
+      playerMarkers[player.id].setLatLng([
+        player.lat,
+        player.lng
+      ]);
+
+    }else{
+
+      const marker =
+        L.marker(
+          [player.lat,player.lng],
+          {icon}
+        ).addTo(map);
+
+      marker.bindPopup(
+        "<b>" +
+        escapeHTML(
+          player.name ||
+          player.username ||
+          "Player"
+        ) +
+        "</b><br>" +
+        "Level " +
+        escapeHTML(player.level || 1) +
+        "<br><br>" +
+        "<button onclick=\"openPhoneApp('social')\">" +
+        "View player" +
+        "</button>"
+      );
+
+      playerMarkers[player.id] = marker;
+    }
+
+  });
+}
+
+
+/* =========================================================
+   HUD
+========================================================= */
+
+function updateHUD(){
+
+  if(!me) return;
+
+  const name =
+    me.name ||
+    me.username ||
+    "Player";
+
+  $("hudName").textContent = name;
+
+  $("hudLevel").textContent =
+    "Level " +
+    (me.level || 1);
+
+  $("hudMoney").textContent =
+    money(me.money);
+
+  $("hudEnergy").textContent =
+    Math.round(me.energy ?? 100);
+
+  $("hudXP").textContent =
+    (me.xp || 0) + " XP";
+
+  $("hudAvatar").textContent =
+    initials(name);
+
+  $("phoneName").textContent =
+    name;
+
+  $("phoneMoney").textContent =
+    money(me.money);
+
+  $("phoneEnergy").textContent =
+    "⚡" +
+    Math.round(me.energy ?? 100);
+
+  $("phoneDate").textContent =
+    me.backgroundNeighborhood
+      ? "📍 " + me.backgroundNeighborhood
+      : "📍 Ibadan, Nigeria";
+
+}
+
+
+/* =========================================================
+   BASIC ACTIONS
+========================================================= */
+
+function doAction(action){
+
+  if(!socket){
+    toast("Connecting...");
+    return;
+  }
+
+  socket.emit(action);
+
+  const names = {
+    work:"Work started.",
+    ride:"You entered transport.",
+    eat:"You stopped to eat."
+  };
+
+  toast(names[action] || "Action completed.");
+}
+
+
+/* =========================================================
+   PHONE
+========================================================= */
+
+function openPhone(){
+
+  $("phonePanel").classList.remove("hidden");
+
+  $("phoneHome").classList.remove("hidden");
+  $("phoneApp").classList.add("hidden");
+
+  updatePhoneClock();
+
+}
+
+function closePhone(){
+
+  $("phonePanel").classList.add("hidden");
+
+  stopMicrophone();
+
+}
+
+function openPhoneApp(app){
+
+  $("phonePanel").classList.remove("hidden");
+  $("phoneHome").classList.add("hidden");
+  $("phoneApp").classList.remove("hidden");
+
+  currentPhoneApp = app;
+
+  $("appTitle").textContent =
+    appTitles[app] || "App";
+
+  renderApp(app);
+}
+
+function phoneBack(){
+
+  if(currentPhoneApp === "home"){
+    closePhone();
+    return;
+  }
+
+  currentPhoneApp = "home";
+
+  $("phoneApp").classList.add("hidden");
+  $("phoneHome").classList.remove("hidden");
+}
+
+
+/* =========================================================
+   PHONE CLOCK
+========================================================= */
+
+function updatePhoneClock(){
+
+  const now = new Date();
+
+  $("phoneTime").textContent =
+    now.toLocaleTimeString(
+      [],
+      {
+        hour:"2-digit",
+        minute:"2-digit"
+      }
+    );
+}
+
+setInterval(updatePhoneClock,1000);
+
+
+/* =========================================================
+   APP ROUTER
+========================================================= */
+
+function renderApp(app){
+
+  const content = $("appContent");
+
+  const apps = {
+
+    messages:renderMessages,
+    calls:renderCalls,
+    social:renderSocial,
+    voice:renderVoice,
+    games:renderGames,
+    bet:renderBet,
+    bank:renderBank,
+    market:renderMarket,
+    jobs:renderJobs,
+    transport:renderTransport,
+    property:renderProperty,
+    events:renderEvents,
+    map:renderMapApp,
+    news:renderNews,
+    rewards:renderRewards,
+    profile:renderProfile,
+    inventory:renderInventory
+
+  };
+
+  if(apps[app]){
+    apps[app](content);
+  }else{
+    content.innerHTML =
+      "<div class='card'>App coming soon.</div>";
+  }
+}
+
+
+/* =========================================================
+   MESSAGES
+========================================================= */
+
+let chatHistory = [];
+
+function renderMessages(el){
+
+  el.innerHTML = `
+
+    <div class="card">
+
+      <div class="row">
+        <div>
+          <b>🌍 Public City Chat</b>
+          <div class="muted small">
+            Talk with people currently in Ibadan Life.
+          </div>
+        </div>
+
+        <span class="green">● LIVE</span>
+      </div>
+
+    </div>
+
+    <div id="chatMessages"
+         class="chatMessages">
+
+      ${
+        chatHistory.length
+        ? chatHistory.map(formatMessage).join("")
+        : `
+          <div class="muted"
+               style="text-align:center;padding:40px 10px">
+            No messages yet.<br>
+            Start the conversation.
+          </div>
+        `
+      }
+
+    </div>
+
+    <div class="chatComposer">
+
+      <input id="chatInput"
+             placeholder="Write something...">
+
+      <button class="send"
+              onclick="sendChat()">
+        ➤
+      </button>
+
+    </div>
+
+    <button class="appAction"
+            onclick="openPhoneApp('voice')">
+      🎙️ Join a live voice room
+    </button>
+  `;
+
+  setTimeout(()=>{
+
+    const box = $("chatMessages");
+
+    if(box){
+      box.scrollTop = box.scrollHeight;
+    }
+
+    const input = $("chatInput");
+
+    if(input){
+
+      input.addEventListener("keydown",e=>{
+        if(e.key === "Enter"){
+          sendChat();
+        }
+      });
+
+    }
+
+  },50);
+}
+
+function formatMessage(m){
+
+  const mine =
+    String(m.userId || m.id || "") ===
+    String(me?.id || "");
+
+  return `
+    <div class="message ${mine ? "mine" : ""}">
+      <b>${escapeHTML(
+        m.name ||
+        m.username ||
+        "Player"
+      )}</b>
+      <p>${escapeHTML(
+        m.message ||
+        m.text ||
+        ""
+      )}</p>
+    </div>
+  `;
+}
+
+function addChatMessage(message){
+
+  chatHistory.push(message);
+
+  if(chatHistory.length > 100){
+    chatHistory.shift();
+  }
+
+  if(currentPhoneApp === "messages"){
+    renderMessages($("appContent"));
+  }else{
+    $("phoneBadge").classList.remove("hidden");
+  }
+}
+
+function sendChat(){
+
+  const input = $("chatInput");
+
+  if(!input) return;
+
+  const message =
+    input.value.trim();
+
+  if(!message) return;
+
+  if(socket){
+    socket.emit("chat",{message});
+  }
+
+  input.value = "";
+}
+
+
+/* =========================================================
+   CALLS
+========================================================= */
+
+function renderCalls(el){
+
+  el.innerHTML = `
+
+    <div class="card">
+
+      <div class="bigNumber">📞</div>
+
+      <h3>Player Calls</h3>
+
+      <div class="muted small">
+        Call people in your friends list.
+      </div>
+
+      <input class="appInput"
+             placeholder="Search player...">
+
+      <button class="appAction primaryAction"
+              onclick="toast('Select a player to call.')">
+        📞 Start Call
+      </button>
+
+    </div>
+
+    <div class="card">
+
+      <b>Recent Calls</b>
+
+      <div class="listItem">
+        <div class="listAvatar">👤</div>
+        <div style="flex:1">
+          <b>No recent calls</b>
+          <div class="muted small">
+            Your calls will appear here.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  `;
+}
+
+
+/* =========================================================
+   SOCIAL
+========================================================= */
+
+function renderSocial(el){
+
+  const online =
+    Object.keys(playerMarkers).length;
+
+  el.innerHTML = `
+
+    <div class="card">
+
+      <div class="row">
+
+        <div>
+          <b>👥 Social City</b>
+          <div class="muted small">
+            Meet players around Ibadan.
+          </div>
+        </div>
+
+        <b class="green">
+          ${online} nearby
+        </b>
+
+      </div>
+
+    </div>
+
+    <div class="card">
+
+      <b>People Around You</b>
+
+      <div class="listItem">
+
+        <div class="listAvatar">🌍</div>
+
+        <div style="flex:1">
+
+          <b>Nearby players</b>
+
+          <div class="muted small">
+            Other players appear directly on the city map.
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="card">
+
+      <b>Social Features</b>
+
+      <button class="appAction"
+              onclick="openPhoneApp('messages')">
+        💬 Public Chat
+      </button>
+
+      <button class="appAction"
+              onclick="openPhoneApp('voice')">
+        🎙️ Voice Rooms
+      </button>
+
+      <button class="appAction"
+              onclick="toast('Friends system ready for backend friends table.')">
+        🤝 Friends
+      </button>
+
+    </div>
+  `;
+}
+
+
+/* =========================================================
+   VOICE ROOMS
+========================================================= */
+
+function renderVoice(el){
+
+  el.innerHTML = `
+
+    <div class="voiceHero">
+
+      <div class="muted small">
+        LIVE VOICE ROOM
+      </div>
+
+      <div id="voiceOrb"
+           class="voiceOrb">
+        🎙️
+      </div>
+
+      <h3 id="voiceRoomTitle">
+        ${escapeHTML(selectedVoiceRoom)}
+      </h3>
+
+      <div class="muted small">
+        Talk with other players using your microphone.
+      </div>
+
+      <div class="voiceButtons">
+
+        <button id="micButton"
+                class="voiceButton"
+                onclick="toggleMicrophone()">
+          🎙️
+        </button>
+
+        <button class="voiceButton"
+                onclick="toast('Speaker enabled.')">
+          🔊
+        </button>
+
+        <button class="voiceButton"
+                onclick="leaveVoiceRoom()">
+          📵
         </button>
 
       </div>
 
-      <small>
-        Your account keeps your Ibadan Life character and progress safe.
-      </small>
-
     </div>
 
-  </div>
+    <div class="card">
 
-</div>
+      <b>Voice Rooms</b>
 
-<!-- =========================
-     FORGOT PASSWORD
-     ========================= -->
-
-<div id="forgotBox">
-
-  <div class="forgotCard">
-
-    <h2>Forgot Password</h2>
-
-    <p>
-      Enter the email address connected to your Ibadan Life account.
-    </p>
-
-    <input
-      id="forgotEmail"
-      type="email"
-      placeholder="Email address"
-      maxlength="254"
-      autocomplete="email"
-      autocapitalize="none"
-      autocorrect="off"
-      spellcheck="false"
-      inputmode="email"
-    >
-
-    <div
-      id="forgotMessage"
-      style="
-        min-height:20px;
-        margin-top:8px;
-        text-align:center;
-        font-size:13px;
-        font-weight:600;
-      "
-    ></div>
-
-    <div class="forgotActions">
-
-      <button
-        type="button"
-        id="closeForgot"
-      >
-        Cancel
+      <button class="appAction"
+              onclick="joinVoiceRoom('Ibadan City')">
+        🌆 Ibadan City
       </button>
 
-      <button
-        type="button"
-        id="sendForgot"
-      >
-        Continue
+      <button class="appAction"
+              onclick="joinVoiceRoom('Bodija Hangout')">
+        🏘️ Bodija Hangout
+      </button>
+
+      <button class="appAction"
+              onclick="joinVoiceRoom('University Area')">
+        🎓 University Area
+      </button>
+
+      <button class="appAction"
+              onclick="joinVoiceRoom('Nightlife')">
+        🌙 Nightlife
       </button>
 
     </div>
 
-  </div>
+    <div class="participants">
 
-</div>
+      <div class="participant">
+        <div class="listAvatar">🎙️</div>
+        You
+      </div>
 
-<!-- =========================
-     GAME
-     ========================= -->
+      <div class="participant">
+        <div class="listAvatar">👤</div>
+        Player
+      </div>
 
-<div id="map"></div>
+      <div class="participant">
+        <div class="listAvatar">👤</div>
+        Player
+      </div>
 
-<div id="night"></div>
+      <div class="participant">
+        <div class="listAvatar">➕</div>
+        Join
+      </div>
 
-<div id="hud">
+    </div>
 
-  <span class="pill" id="money">
-    ₦0
-  </span>
-
-  <span class="pill" id="energy">
-    ⚡100
-  </span>
-
-  <span class="pill" id="level">
-    Lv 1
-  </span>
-
-  <!-- BACKGROUND -->
-  <span class="pill" id="background">
-    🎭 Background
-  </span>
-
-  <span class="pill" id="clock">
-    🕐
-  </span>
-
-  <span class="pill" id="online">
-    1 online
-  </span>
-
-</div>
-
-<div id="bar">
-
-  <div id="log"></div>
-
-  <div class="row">
-
-    <button id="work">
-      Work
-    </button>
-
-    <button id="ride">
-      Ride ₦200
-    </button>
-
-    <button id="eat">
-      Eat
-    </button>
-
-    <input
-      id="msg"
-      placeholder="Chat..."
-      maxlength="140"
-    >
-
-    <button id="send">
-      Send
-    </button>
-
-  </div>
-
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="/socket.io/socket.io.js"></script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-
-<script>
-
-/* ==========================================
-   GLOBAL
-   ========================================== */
-
-let accountMode = 'login';
-
-let authToken =
-  localStorage.getItem('ibadanLifeToken') || '';
-
-let myPlayerId = null;
-
-let socket = null;
-
-let joinData = null;
-
-const $ = id =>
-  document.getElementById(id);
-
-
-/* ==========================================
-   ERROR
-   ========================================== */
-
-function showError(message){
-  $('accountError').textContent =
-    message || '';
+  `;
 }
 
+async function toggleMicrophone(){
 
-/* ==========================================
-   PASSWORD TOGGLE
-   ========================================== */
+  if(micEnabled){
 
-function setupPasswordToggle(inputId,buttonId){
-
-  const input = $(inputId);
-  const button = $(buttonId);
-
-  button.onclick = () => {
-
-    if(input.type === 'password'){
-
-      input.type = 'text';
-      button.textContent = 'Hide';
-
-    }else{
-
-      input.type = 'password';
-      button.textContent = 'Show';
-
-    }
-
-    input.focus();
-
-  };
-
-}
-
-setupPasswordToggle(
-  'password',
-  'showPassword'
-);
-
-setupPasswordToggle(
-  'confirmPassword',
-  'showConfirmPassword'
-);
-
-
-/* ==========================================
-   ACCOUNT MODE
-   ========================================== */
-
-function setAccountMode(mode){
-
-  accountMode = mode;
-
-  showError('');
-
-  $('username').value = '';
-  $('email').value = '';
-  $('password').value = '';
-  $('confirmPassword').value = '';
-
-  $('showPassword').textContent = 'Show';
-  $('showConfirmPassword').textContent = 'Show';
-
-  $('password').type = 'password';
-  $('confirmPassword').type = 'password';
-
-
-  if(mode === 'signup'){
-
-    $('accountTitle').textContent =
-      'Create Account';
-
-    $('accountSubtitle').textContent =
-      'Create your account and start your Ibadan story';
-
-    $('accountButton').textContent =
-      'Create Account';
-
-    $('email')
-      .classList.remove('hidden');
-
-    $('confirmPasswordBox')
-      .classList.remove('hidden');
-
-    $('forgotRow')
-      .classList.add('hidden');
-
-    $('switchText').textContent =
-      'Already have an account?';
-
-    $('switchButton').textContent =
-      'Sign In';
-
-    $('password').autocomplete =
-      'new-password';
-
-  }else{
-
-    $('accountTitle').textContent =
-      'Welcome Back';
-
-    $('accountSubtitle').textContent =
-      'Sign in to continue your Ibadan story';
-
-    $('accountButton').textContent =
-      'Sign In';
-
-    $('email')
-      .classList.add('hidden');
-
-    $('confirmPasswordBox')
-      .classList.add('hidden');
-
-    $('forgotRow')
-      .classList.remove('hidden');
-
-    $('switchText').textContent =
-      "Don't have an account?";
-
-    $('switchButton').textContent =
-      'Create Account';
-
-    $('password').autocomplete =
-      'current-password';
-
-  }
-
-}
-
-$('switchButton').onclick = () => {
-
-  setAccountMode(
-    accountMode === 'login'
-      ? 'signup'
-      : 'login'
-  );
-
-};
-
-
-/* ==========================================
-   LOGIN / SIGNUP
-   ========================================== */
-
-async function submitAccount(){
-
-  const username =
-    $('username').value.trim();
-
-  const email =
-    $('email').value.trim();
-
-  const password =
-    $('password').value;
-
-  showError('');
-
-
-  if(!username){
-
-    showError(
-      'Please enter a username.'
-    );
-
-    $('username').focus();
+    stopMicrophone();
     return;
   }
-
-
-  if(username.length < 3){
-
-    showError(
-      'Username must be at least 3 characters.'
-    );
-
-    $('username').focus();
-    return;
-  }
-
-
-  if(!/^[a-zA-Z0-9_]+$/.test(username)){
-
-    showError(
-      'Username can only use letters, numbers and _.'
-    );
-
-    $('username').focus();
-    return;
-  }
-
-
-  if(accountMode === 'signup'){
-
-    if(!email){
-
-      showError(
-        'Please enter your email address.'
-      );
-
-      $('email').focus();
-      return;
-    }
-
-
-    if(
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-    ){
-
-      showError(
-        'Please enter a valid email address.'
-      );
-
-      $('email').focus();
-      return;
-    }
-
-  }
-
-
-  if(!password){
-
-    showError(
-      'Please enter your password.'
-    );
-
-    $('password').focus();
-    return;
-  }
-
-
-  if(password.length < 8){
-
-    showError(
-      'Password must be at least 8 characters.'
-    );
-
-    $('password').focus();
-    return;
-  }
-
-
-  if(accountMode === 'signup'){
-
-    if(
-      $('confirmPassword').value !== password
-    ){
-
-      showError(
-        'Passwords do not match.'
-      );
-
-      $('confirmPassword').focus();
-      return;
-    }
-
-  }
-
-
-  $('accountButton').disabled = true;
-
-  $('accountButton').textContent =
-    accountMode === 'signup'
-      ? 'Creating account...'
-      : 'Signing in...';
-
 
   try{
 
-    const endpoint =
-      accountMode === 'signup'
-        ? '/api/auth/signup'
-        : '/api/auth/login';
+    if(!navigator.mediaDevices ||
+       !navigator.mediaDevices.getUserMedia){
 
+      toast("Your browser does not support microphone access.");
+      return;
+    }
 
-    const body = {
-      username,
-      password
-    };
+    micStream =
+      await navigator.mediaDevices.getUserMedia({
+        audio:true
+      });
 
+    micEnabled = true;
 
-    if(accountMode === 'signup'){
+    $("micButton")?.classList.add("active");
+    $("voiceOrb")?.classList.add("active");
 
-      body.email = email;
+    if(socket){
 
-      body.confirmPassword =
-        $('confirmPassword').value;
+      socket.emit("voice:join",{
+        room:selectedVoiceRoom,
+        name:me?.name || me?.username || "Player"
+      });
+
+      socket.emit("voice:mute",{
+        room:selectedVoiceRoom,
+        muted:false
+      });
 
     }
 
+    toast("Microphone is ON.");
 
-    const response =
-      await fetch(
-        endpoint,
-        {
-          method:'POST',
+  }catch(err){
 
-          headers:{
-            'Content-Type':
-              'application/json'
-          },
-
-          body:JSON.stringify(body)
-        }
-      );
-
-
-    let data;
-
-    try{
-
-      data = await response.json();
-
-    }catch{
-
-      throw new Error(
-        'The server returned an invalid response.'
-      );
-
-    }
-
-
-    if(!response.ok){
-
-      throw new Error(
-        data.error ||
-        'Unable to continue.'
-      );
-
-    }
-
-
-    if(!data.token){
-
-      throw new Error(
-        'The server did not return a login token.'
-      );
-
-    }
-
-
-    authToken =
-      data.token;
-
-
-    localStorage.setItem(
-      'ibadanLifeToken',
-      authToken
+    toast(
+      "Microphone permission was not granted."
     );
+  }
+}
 
+function stopMicrophone(){
 
-    startGame(
-      data.player
-    );
+  if(micStream){
 
+    micStream
+      .getTracks()
+      .forEach(track=>track.stop());
 
-  }catch(error){
+    micStream = null;
+  }
 
-    showError(
-      error.message ||
-      'Something went wrong.'
-    );
+  micEnabled = false;
 
-    $('accountButton').disabled =
-      false;
+  $("micButton")?.classList.remove("active");
+  $("voiceOrb")?.classList.remove("active");
 
-    $('accountButton').textContent =
-      accountMode === 'signup'
-        ? 'Create Account'
-        : 'Sign In';
+  if(socket){
+
+    socket.emit("voice:mute",{
+      room:selectedVoiceRoom,
+      muted:true
+    });
+
+  }
+}
+
+function joinVoiceRoom(room){
+
+  selectedVoiceRoom = room;
+
+  if(socket){
+
+    socket.emit("voice:join",{
+      room,
+      name:me?.name || me?.username || "Player"
+    });
 
   }
 
+  renderVoice($("appContent"));
+
+  toast("Joined " + room);
 }
 
-$('accountButton').onclick =
-  submitAccount;
+function leaveVoiceRoom(){
+
+  stopMicrophone();
+
+  if(socket){
+
+    socket.emit("voice:leave",{
+      room:selectedVoiceRoom
+    });
+
+  }
+
+  toast("You left the voice room.");
+}
 
 
-/* ==========================================
-   ENTER KEY
-   ========================================== */
+/* =========================================================
+   GAMES
+========================================================= */
 
-['username','email','password','confirmPassword']
-.forEach(id => {
+function renderGames(el){
 
-  $(id).addEventListener(
-    'keydown',
-    event => {
+  el.innerHTML = `
 
-      if(event.key === 'Enter'){
+    <div class="card">
 
-        event.preventDefault();
+      <b>🎮 Ibadan Mini Games</b>
 
-        submitAccount();
+      <div class="muted small">
+        Play games and earn virtual city rewards.
+      </div>
 
-      }
+    </div>
 
-    }
+    <div class="gameChoice">
+
+      <button onclick="playDice()">
+        🎲
+        <strong>Lucky Dice</strong>
+        <small class="muted">
+          Try your luck
+        </small>
+      </button>
+
+      <button onclick="playCoin()">
+        🪙
+        <strong>Coin Flip</strong>
+        <small class="muted">
+          Heads or tails
+        </small>
+      </button>
+
+      <button onclick="playQuiz()">
+        🧠
+        <strong>Ibadan Quiz</strong>
+        <small class="muted">
+          Test yourself
+        </small>
+      </button>
+
+      <button onclick="playRace()">
+        🏎️
+        <strong>City Race</strong>
+        <small class="muted">
+          Race players
+        </small>
+      </button>
+
+    </div>
+
+    <div class="card">
+
+      <b>Today's Reward</b>
+
+      <div class="progress">
+        <i style="width:70%"></i>
+      </div>
+
+      <div class="muted small"
+           style="margin-top:7px">
+        7 / 10 games completed
+      </div>
+
+    </div>
+  `;
+}
+
+function playDice(){
+
+  const result =
+    Math.floor(Math.random()*6)+1;
+
+  toast("🎲 You rolled " + result + "!");
+}
+
+function playCoin(){
+
+  const result =
+    Math.random()>.5
+      ? "HEADS"
+      : "TAILS";
+
+  toast("🪙 " + result);
+}
+
+function playQuiz(){
+
+  const answer =
+    prompt(
+      "Ibadan Quiz:\nWhich state is Ibadan the capital of?"
+    );
+
+  if(!answer) return;
+
+  if(answer.toLowerCase().includes("oyo")){
+    toast("🎉 Correct! +50 XP");
+  }else{
+    toast("Not quite. The answer is Oyo State.");
+  }
+}
+
+function playRace(){
+
+  toast("🏎️ City Race lobby opened.");
+}
+
+
+/* =========================================================
+   VIRTUAL BETTING
+========================================================= */
+
+function renderBet(el){
+
+  el.innerHTML = `
+
+    <div class="card">
+
+      <div class="row">
+        <div>
+          <b>🏆 Ibadan Bet</b>
+          <div class="muted small">
+            Virtual game currency only.
+          </div>
+        </div>
+
+        <b class="green">
+          ${money(me?.money)}
+        </b>
+      </div>
+
+    </div>
+
+    <div class="card">
+
+      <b>Tonight's Virtual Match</b>
+
+      <div style="margin-top:12px">
+        🟢 Ibadan United
+        <br>
+        <span class="muted">vs</span>
+        <br>
+        🔵 Oyo Stars
+      </div>
+
+      <div class="betOdds">
+
+        <button class="odds"
+                onclick="selectBet(this,'home')">
+          Home
+          <b>1.80</b>
+        </button>
+
+        <button class="odds"
+                onclick="selectBet(this,'draw')">
+          Draw
+          <b>3.20</b>
+        </button>
+
+        <button class="odds"
+                onclick="selectBet(this,'away')">
+          Away
+          <b>2.10</b>
+        </button>
+
+      </div>
+
+      <input id="betAmount"
+             class="appInput"
+             type="number"
+             min="1"
+             placeholder="Virtual stake">
+
+      <button class="appAction primaryAction"
+              onclick="placeVirtualBet()">
+        Place Virtual Bet
+      </button>
+
+    </div>
+
+    <div class="card">
+
+      <b>Responsible Play</b>
+
+      <div class="muted small"
+           style="margin-top:6px">
+        This feature uses only virtual in-game currency.
+        It has no cash-out or real-money wagering.
+      </div>
+
+    </div>
+  `;
+}
+
+function selectBet(button,type){
+
+  document
+    .querySelectorAll(".odds")
+    .forEach(x=>x.classList.remove("selected"));
+
+  button.classList.add("selected");
+
+  selectedBet = type;
+}
+
+function placeVirtualBet(){
+
+  const amount =
+    Number($("betAmount")?.value || 0);
+
+  if(!selectedBet){
+    toast("Choose an outcome first.");
+    return;
+  }
+
+  if(amount <= 0){
+    toast("Enter a virtual stake.");
+    return;
+  }
+
+  if(amount > Number(me?.money || 0)){
+    toast("Not enough virtual money.");
+    return;
+  }
+
+  toast(
+    "🏆 Virtual bet placed: " +
+    selectedBet +
+    " • " +
+    money(amount)
   );
+}
+
+
+/* =========================================================
+   BANK
+========================================================= */
+
+function renderBank(el){
+
+  el.innerHTML = `
+
+    <div class="card">
+
+      <div class="muted small">
+        IBADAN LIFE BANK
+      </div>
+
+      <div class="bigNumber green">
+        ${money(me?.money)}
+      </div>
+
+      <div class="muted small">
+        Available city balance
+      </div>
+
+    </div>
+
+    <div class="card">
+
+      <button class="appAction"
+              onclick="toast('Transfer screen opened.')">
+        💸 Transfer Money
+      </button>
+
+      <button class="appAction"
+              onclick="toast('Deposit system opened.')">
+        💵 Deposit
+      </button>
+
+      <button class="appAction"
+              onclick="toast('Transaction history opened.')">
+        📋 Transactions
+      </button>
+
+      <button class="appAction"
+              onclick="toast('ATM locations shown on map.')">
+        🏧 Find ATM
+      </button>
+
+    </div>
+
+    <div class="card">
+
+      <b>Security</b>
+
+      <div class="muted small"
+           style="margin-top:7px">
+        Keep your account secure. Never share your
+        password with another player.
+      </div>
+
+    </div>
+  `;
+}
+
+
+/* =========================================================
+   MARKET
+========================================================= */
+
+function renderMarket(el){
+
+  const items = [
+
+    ["👕","Designer Shirt","₦2,500"],
+    ["👟","Sneakers","₦8,000"],
+    ["🍔","Burger","₦1,500"],
+    ["📱","New Phone","₦45,000"],
+    ["🎧","Headphones","₦12,000"],
+    ["🕶️","Designer Shades","₦5,500"]
+
+  ];
+
+  el.innerHTML = `
+
+    <div class="card">
+
+      <b>🛒 Ibadan Market</b>
+
+      <div class="muted small">
+        Buy items for your character and lifestyle.
+      </div>
+
+    </div>
+
+    ${items.map(item=>`
+
+      <div class="card">
+
+        <div class="row">
+
+          <div style="display:flex;gap:12px;align-items:center">
+
+            <div class="listAvatar">
+              ${item[0]}
+            </div>
+
+            <div>
+              <b>${item[1]}</b>
+              <div class="green small">
+                ${item[2]}
+              </div>
+            </div>
+
+          </div>
+
+          <button class="appAction"
+                  style="width:auto;padding:9px 14px"
+                  onclick="buyItem('${item[1]}')">
+            Buy
+          </button>
+
+        </div>
+
+      </div>
+
+    `).join("")}
+  `;
+}
+
+function buyItem(item){
+
+  toast(
+    item +
+    " added to your shopping cart."
+  );
+}
+
+
+/* =========================================================
+   JOBS
+========================================================= */
+
+function renderJobs(el){
+
+  el.innerHTML = `
+
+    <div class="card">
+
+      <b>💼 Jobs</b>
+
+      <div class="muted small">
+        Build your career and earn city money.
+      </div>
+
+    </div>
+
+    <div class="card">
+
+      <div class="row">
+        <div>
+          <b>🚕 Driver</b>
+          <div class="muted small">
+            Transport passengers around Ibadan.
+          </div>
+        </div>
+        <b class="green">₦8,000/day</b>
+      </div>
+
+      <button class="appAction primaryAction"
+              onclick="applyJob('Driver')">
+        Apply
+      </button>
+
+    </div>
+
+    <div class="card">
+
+      <div class="row">
+        <div>
+          <b>💻 Tech Worker</b>
+          <div class="muted small">
+            Complete digital jobs.
+          </div>
+        </div>
+        <b class="green">₦15,000/day</b>
+      </div>
+
+      <button class="appAction"
+              onclick="applyJob('Tech Worker')">
+        Apply
+      </button>
+
+    </div>
+
+    <div class="card">
+
+      <div class="row">
+        <div>
+          <b>🏪 Shop Manager</b>
+          <div class="muted small">
+            Manage a local business.
+          </div>
+        </div>
+        <b class="green">₦12,000/day</b>
+      </div>
+
+      <button class="appAction"
+              onclick="applyJob('Shop Manager')">
+        Apply
+      </button>
+
+    </div>
+  `;
+}
+
+function applyJob(job){
+
+  if(socket){
+    socket.emit("job:apply",{job});
+  }
+
+  toast("Application submitted for " + job + ".");
+}
+
+
+/* =========================================================
+   TRANSPORT
+========================================================= */
+
+function renderTransport(el){
+
+  el.innerHTML = `
+
+    <div class="card">
+
+      <b>🚕 Transport</b>
+
+      <div class="muted small">
+        Move around the city.
+      </div>
+
+    </div>
+
+    <button class="card"
+            style="width:100%;text-align:left"
+            onclick="requestRide('Danfo')">
+
+      🚌 <b>Danfo</b>
+
+      <div class="muted small">
+        Affordable city transport
+      </div>
+
+    </button>
+
+    <button class="card"
+            style="width:100%;text-align:left"
+            onclick="requestRide('Taxi')">
+
+      🚕 <b>Taxi</b>
+
+      <div class="muted small">
+        Fast private transport
+      </div>
+
+    </button>
+
+    <button class="card"
+            style="width:100%;text-align:left"
+            onclick="requestRide('Bike')">
+
+      🛵 <b>Bike</b>
+
+      <div class="muted small">
+        Quick movement through traffic
+      </div>
+
+    </button>
+
+  `;
+}
+
+function requestRide(type){
+
+  if(socket){
+    socket.emit("ride",{type});
+  }
+
+  toast(type + " requested.");
+}
+
+
+/* =========================================================
+   PROPERTY
+========================================================= */
+
+function renderProperty(el){
+
+  el.innerHTML = `
+
+    <div class="card">
+
+      <b>🏠 Property</b>
+
+      <div class="muted small">
+        Build your own life in Ibadan.
+      </div>
+
+    </div>
+
+    <div class="card">
+
+      <div class="bigNumber">🏡</div>
+
+      <h3>Your Home</h3>
+
+      <div class="muted small">
+        No property purchased yet.
+      </div>
+
+      <button class="appAction primaryAction"
+              onclick="toast('Property marketplace opened.')">
+        Browse Houses
+      </button>
+
+    </div>
+
+    <div class="card">
+
+      <b>Available Areas</b>
+
+      <div class="listItem">
+        <div class="listAvatar">🏘️</div>
+        <div>
+          <b>Bodija</b>
+          <div class="muted small">Premium residential</div>
+        </div>
+      </div>
+
+      <div class="listItem">
+        <div class="listAvatar">🏙️</div>
+        <div>
+          <b>Mokola</b>
+          <div class="muted small">Central city</div>
+        </div>
+      </div>
+
+      <div class="listItem">
+        <div class="listAvatar">🌆</div>
+        <div>
+          <b>Apete</b>
+          <div class="muted small">Growing area</div>
+        </div>
+      </div>
+
+    </div>
+  `;
+}
+
+
+/* =========================================================
+   EVENTS
+========================================================= */
+
+function renderEvents(el){
+
+  el.innerHTML = `
+
+    <div class="card">
+
+      <b>🎉 Events</b>
+
+      <div class="muted small">
+        Things happening around the city.
+      </div>
+
+    </div>
+
+    <div class="card">
+
+      <div class="row">
+        <div>
+          <b>🎵 City Night</b>
+          <div class="muted small">
+            Live music and social gathering
+          </div>
+        </div>
+        <span class="green">LIVE</span>
+      </div>
+
+      <button class="appAction"
+              onclick="toast('Event location marked on map.')">
+        📍 Go there
+      </button>
+
+    </div>
+
+    <div class="card">
+
+      <div class="row">
+        <div>
+          <b>⚽ City Football</b>
+          <div class="muted small">
+            Community match
+          </div>
+        </div>
+        <span>18:00</span>
+      </div>
+
+      <button class="appAction"
+              onclick="toast('Event reminder set.')">
+        🔔 Remind me
+      </button>
+
+    </div>
+
+  `;
+}
+
+
+/* =========================================================
+   MAP APP
+========================================================= */
+
+function renderMapApp(el){
+
+  el.innerHTML = `
+
+    <div class="card">
+
+      <b>📍 Ibadan Map</b>
+
+      <div class="muted small">
+        Explore the city and discover players,
+        businesses, transport and events.
+      </div>
+
+      <button class="appAction primaryAction"
+              onclick="phoneBack();locatePlayer()">
+        📍 Find Me
+      </button>
+
+    </div>
+
+    <div class="card">
+
+      <b>Discover</b>
+
+      <button class="appAction"
+              onclick="toast('Restaurants highlighted.')">
+        🍲 Restaurants
+      </button>
+
+      <button class="appAction"
+              onclick="toast('Schools highlighted.')">
+        🎓 Schools
+      </button>
+
+      <button class="appAction"
+              onclick="toast('Hospitals highlighted.')">
+        🏥 Hospitals
+      </button>
+
+      <button class="appAction"
+              onclick="toast('Businesses highlighted.')">
+        🏪 Businesses
+      </button>
+
+    </div>
+  `;
+}
+
+
+/* =========================================================
+   NEWS
+========================================================= */
+
+function renderNews(el){
+
+  el.innerHTML = `
+
+    <div class="card">
+
+      <b>📰 Ibadan Life News</b>
+
+      <div class="muted small">
+        What's happening in your virtual city?
+      </div>
+
+    </div>
+
+    <div class="card">
+
+      <b>🌆 City expands</b>
+
+      <div class="muted small"
+           style="margin-top:7px">
+        New places and activities are being added
+        to Ibadan Life.
+      </div>
+
+    </div>
+
+    <div class="card">
+
+      <b>👥 Players online</b>
+
+      <div class="muted small"
+           style="margin-top:7px">
+        Meet new people, chat and join voice rooms.
+      </div>
+
+    </div>
+
+    <div class="card">
+
+      <b>🎮 New mini-games</b>
+
+      <div class="muted small"
+           style="margin-top:7px">
+        Try the games inside your phone.
+      </div>
+
+    </div>
+  `;
+}
+
+
+/* =========================================================
+   REWARDS
+========================================================= */
+
+function renderRewards(el){
+
+  el.innerHTML = `
+
+    <div class="card">
+
+      <div class="bigNumber">🎁</div>
+
+      <h3>Daily Reward</h3>
+
+      <div class="muted small">
+        Come back every day to collect rewards.
+      </div>
+
+      <button class="appAction primaryAction"
+              onclick="claimReward()">
+        Claim Reward
+      </button>
+
+    </div>
+
+    <div class="card">
+
+      <b>Achievements</b>
+
+      <div class="listItem">
+
+        <div class="listAvatar">🏃</div>
+
+        <div style="flex:1">
+
+          <b>First Steps</b>
+
+          <div class="progress">
+            <i style="width:100%"></i>
+          </div>
+
+        </div>
+
+        <span>✓</span>
+
+      </div>
+
+      <div class="listItem">
+
+        <div class="listAvatar">💬</div>
+
+        <div style="flex:1">
+
+          <b>Social Butterfly</b>
+
+          <div class="progress">
+            <i style="width:45%"></i>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  `;
+}
+
+function claimReward(){
+
+  toast("🎁 Daily reward claimed!");
+}
+
+
+/* =========================================================
+   PROFILE
+========================================================= */
+
+function renderProfile(el){
+
+  const name =
+    me?.name ||
+    me?.username ||
+    "Player";
+
+  el.innerHTML = `
+
+    <div class="card"
+         style="text-align:center">
+
+      <div class="avatar"
+           style="width:75px;height:75px;margin:auto;font-size:25px">
+        ${escapeHTML(initials(name))}
+      </div>
+
+      <h2>${escapeHTML(name)}</h2>
+
+      <div class="muted">
+        @${escapeHTML(me?.username || "player")}
+      </div>
+
+      <div class="muted small"
+           style="margin-top:8px">
+        Level ${me?.level || 1}
+      </div>
+
+    </div>
+
+    <div class="card">
+
+      <div class="row">
+        <span>💵 Money</span>
+        <b class="green">${money(me?.money)}</b>
+      </div>
+
+      <div class="row"
+           style="margin-top:13px">
+        <span>⚡ Energy</span>
+        <b>${Math.round(me?.energy ?? 100)}</b>
+      </div>
+
+      <div class="row"
+           style="margin-top:13px">
+        <span>⭐ XP</span>
+        <b>${me?.xp || 0}</b>
+      </div>
+
+      <div class="row"
+           style="margin-top:13px">
+        <span>📍 Area</span>
+        <b>${escapeHTML(
+          me?.backgroundNeighborhood || "Ibadan"
+        )}</b>
+      </div>
+
+    </div>
+
+    <button class="appAction"
+            onclick="toast('Settings opened.')">
+      ⚙️ Account Settings
+    </button>
+
+    <button class="appAction"
+            onclick="logout()">
+      🚪 Logout
+    </button>
+  `;
+}
+
+
+/* =========================================================
+   INVENTORY
+========================================================= */
+
+function renderInventory(el){
+
+  el.innerHTML = `
+
+    <div class="card">
+
+      <b>🎒 Inventory</b>
+
+      <div class="muted small">
+        Items you own in Ibadan Life.
+      </div>
+
+    </div>
+
+    <div class="gameChoice">
+
+      <button>
+        👕
+        <strong>Clothes</strong>
+        <small class="muted">
+          0 items
+        </small>
+      </button>
+
+      <button>
+        🍲
+        <strong>Food</strong>
+        <small class="muted">
+          0 items
+        </small>
+      </button>
+
+      <button>
+        🚗
+        <strong>Vehicles</strong>
+        <small class="muted">
+          0 items
+        </small>
+      </button>
+
+      <button>
+        🏠
+        <strong>Property</strong>
+        <small class="muted">
+          0 items
+        </small>
+      </button>
+
+    </div>
+
+  `;
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function navHome(button){
+
+  document
+    .querySelectorAll(".navBtn")
+    .forEach(x=>x.classList.remove("active"));
+
+  button.classList.add("active");
+
+  closePhone();
+}
+
+function navMap(button){
+
+  document
+    .querySelectorAll(".navBtn")
+    .forEach(x=>x.classList.remove("active"));
+
+  button.classList.add("active");
+
+  closePhone();
+  locatePlayer();
+}
+
+function logout(){
+
+  stopMicrophone();
+
+  if(socket){
+    socket.disconnect();
+    socket = null;
+  }
+
+  localStorage.removeItem("ibadan_token");
+
+  location.reload();
+}
+
+
+/* =========================================================
+   KEYBOARD
+========================================================= */
+
+document.addEventListener("keydown",e=>{
+
+  if(e.key === "Escape"){
+
+    if(!$("phonePanel").classList.contains("hidden")){
+      closePhone();
+    }
+
+  }
 
 });
 
 
-/* ==========================================
-   FORGOT PASSWORD
-   ========================================== */
-
-$('forgotButton').onclick = () => {
-
-  $('forgotBox')
-    .classList.add('visible');
-
-  $('forgotEmail').value =
-    $('email').value.trim();
-
-  $('forgotMessage').style.color =
-    '#b91c1c';
-
-  $('forgotMessage').textContent =
-    '';
-
-  setTimeout(
-    () => $('forgotEmail').focus(),
-    50
-  );
-
-};
-
-
-$('closeForgot').onclick = () => {
-
-  $('forgotBox')
-    .classList.remove('visible');
-
-};
-
-
-$('forgotBox').addEventListener(
-  'click',
-  event => {
-
-    if(event.target === $('forgotBox')){
-
-      $('forgotBox')
-        .classList.remove('visible');
-
-    }
-
-  }
-);
-
-
-$('sendForgot').onclick =
-  async () => {
-
-    const email =
-      $('forgotEmail').value.trim();
-
-
-    if(!email){
-
-      $('forgotMessage').style.color =
-        '#b91c1c';
-
-      $('forgotMessage').textContent =
-        'Enter your email address first.';
-
-      return;
-
-    }
-
-
-    if(
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-    ){
-
-      $('forgotMessage').style.color =
-        '#b91c1c';
-
-      $('forgotMessage').textContent =
-        'Please enter a valid email address.';
-
-      return;
-
-    }
-
-
-    $('sendForgot').disabled = true;
-
-    $('sendForgot').textContent =
-      'Checking...';
-
-    $('forgotMessage').style.color =
-      '#b45309';
-
-    $('forgotMessage').textContent =
-      'Requesting recovery token...';
-
-
-    try{
-
-      const response =
-        await fetch(
-          '/api/auth/recovery',
-          {
-            method:'POST',
-
-            headers:{
-              'Content-Type':
-                'application/json'
-            },
-
-            body:JSON.stringify({
-              email
-            })
-          }
-        );
-
-
-      const data =
-        await response.json();
-
-
-      if(!response.ok){
-
-        throw new Error(
-          data.error ||
-          'Password recovery failed.'
-        );
-
-      }
-
-
-      $('forgotMessage').style.color =
-        '#15803d';
-
-
-      if(data.recoveryToken){
-
-        $('forgotMessage').textContent =
-          'Recovery token: ' +
-          data.recoveryToken;
-
-      }else{
-
-        $('forgotMessage').textContent =
-          data.message ||
-          'Recovery request submitted.';
-
-      }
-
-
-    }catch(error){
-
-      $('forgotMessage').style.color =
-        '#b91c1c';
-
-      $('forgotMessage').textContent =
-        error.message ||
-        'Password recovery failed.';
-
-    }finally{
-
-      $('sendForgot').disabled =
-        false;
-
-      $('sendForgot').textContent =
-        'Continue';
-
-    }
-
-  };
-
-
-/* ==========================================
-   GOOGLE LOGIN
-   ========================================== */
-
-let googleClientId = '';
-
-
-async function setupGoogleLogin(){
-
-  try{
-
-    const response =
-      await fetch('/api/config');
-
-
-    if(!response.ok){
-
-      throw new Error(
-        'Unable to load Google configuration.'
-      );
-
-    }
-
-
-    const config =
-      await response.json();
-
-
-    googleClientId =
-      config.googleClientId || '';
-
-
-    if(!googleClientId){
-
-      console.error(
-        'GOOGLE_CLIENT_ID was not returned by the server.'
-      );
-
-      return;
-
-    }
-
-
-    const waitForGoogle = () => {
-
-      if(
-        !window.google ||
-        !window.google.accounts ||
-        !window.google.accounts.id
-      ){
-
-        setTimeout(
-          waitForGoogle,
-          300
-        );
-
-        return;
-
-      }
-
-
-      google.accounts.id.initialize({
-
-        client_id:googleClientId,
-
-        callback:
-          handleGoogleCredential,
-
-        auto_select:false,
-
-        cancel_on_tap_outside:true
-
-      });
-
-    };
-
-
-    waitForGoogle();
-
-
-  }catch(error){
-
-    console.error(
-      'Google login setup failed:',
-      error
-    );
-
-  }
-
-}
-
-
-async function handleGoogleCredential(response){
-
-  showError('');
-
-
-  if(
-    !response ||
-    !response.credential
-  ){
-
-    showError(
-      'Google sign-in did not return a valid account.'
-    );
-
-    return;
-
-  }
-
-
-  $('googleButton').disabled = true;
-
-  $('googleButton').textContent =
-    'Signing in with Google...';
-
-
-  try{
-
-    const result =
-      await fetch(
-        '/api/auth/google',
-        {
-          method:'POST',
-
-          headers:{
-            'Content-Type':
-              'application/json'
-          },
-
-          body:JSON.stringify({
-            credential:
-              response.credential
-          })
-        }
-      );
-
-
-    const data =
-      await result.json();
-
-
-    if(!result.ok){
-
-      throw new Error(
-        data.error ||
-        'Google sign-in failed.'
-      );
-
-    }
-
-
-    if(!data.token){
-
-      throw new Error(
-        'Google sign-in did not return a login token.'
-      );
-
-    }
-
-
-    authToken =
-      data.token;
-
-
-    localStorage.setItem(
-      'ibadanLifeToken',
-      authToken
-    );
-
-
-    startGame(
-      data.player
-    );
-
-
-  }catch(error){
-
-    showError(
-      error.message ||
-      'Google sign-in failed.'
-    );
-
-
-    $('googleButton').disabled =
-      false;
-
-
-    $('googleButton').innerHTML =
-      '<span class="googleIcon">G</span> Continue with Google';
-
-  }
-
-}
-
-
-$('googleButton').onclick = () => {
-
-  if(!googleClientId){
-
-    showError(
-      'Google login is not configured yet.'
-    );
-
-    return;
-
-  }
-
-
-  if(
-    !window.google ||
-    !window.google.accounts ||
-    !window.google.accounts.id
-  ){
-
-    showError(
-      'Google login is still loading. Please try again.'
-    );
-
-    return;
-
-  }
-
-
-  google.accounts.id.prompt();
-
-};
-
-
-setupGoogleLogin();
-
-
-/* ==========================================
-   START GAME
-   ========================================== */
-
-function startGame(player){
-
-  if(!player){
-    player = {};
-  }
-
-
-  myPlayerId =
-    player.id != null
-      ? String(player.id)
-      : null;
-
-
-  const join =
-    $('join');
-
-  if(join){
-    join.remove();
-  }
-
-
-  joinData = {
-
-    name:
-      player.name ||
-      player.username ||
-      'Player',
-
-    color:
-      player.color ||
-      '#16a34a',
-
-    backgroundType:
-      player.backgroundType ||
-      null,
-
-    backgroundNeighborhood:
-      player.backgroundNeighborhood ||
-      null
-
-  };
-
-
-  socket =
-    io({
-      autoConnect:false,
-
-      auth:{
-        token:authToken
-      }
-    });
-
-
-  setupGameSocket();
-
-  socket.connect();
-
-}
-
-
-/* ==========================================
-   GAME SOCKET
-   ========================================== */
-
-function setupGameSocket(){
-
-  const map =
-    L.map('map')
-      .setView(
-        [7.3900,3.9100],
-        13
-      );
-
-
-  L.tileLayer(
-    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    {
-      attribution:
-        '© OpenStreetMap'
-    }
-  ).addTo(map);
-
-
-  const COL = {
-
-    wealthy:'#7c3aed',
-
-    middle:'#2563eb',
-
-    ordinary:'#16a34a',
-
-    commercial:'#dc2626',
-
-    older:'#b45309'
-
-  };
-
-
-  const npcDots = [];
-
-  const busMarks = {};
-
-  const marks = {};
-
-
-  function log(t,cls){
-
-    const d =
-      document.createElement('div');
-
-
-    if(cls){
-      d.className = cls;
-    }
-
-
-    d.textContent =
-      t;
-
-
-    $('log').appendChild(d);
-
-    $('log').scrollTop =
-      1e6;
-
-  }
-
-
-  /* =========================
-     CONNECTION
-     ========================= */
-
-  socket.on(
-    'connect',
-    () => {
-
-      log(
-        'Connected to Ibadan Life.',
-        'sys'
-      );
-
-    }
-  );
-
-
-  socket.on(
-    'connect_error',
-    error => {
-
-      log(
-        'Connection error: ' +
-        (
-          error.message ||
-          'Unable to connect.'
-        ),
-        'sys'
-      );
-
-    }
-  );
-
-
-  /* =========================
-     PLACES
-     ========================= */
-
-  socket.on(
-    'places',
-    ps => {
-
-      ps.forEach(p => {
-
-        const color =
-          COL[p.type] ||
-          '#16a34a';
-
-
-        L.circleMarker(
-          [p.lat,p.lng],
-          {
-            radius:9,
-            color,
-            fillColor:color,
-            fillOpacity:.85
-          }
-        )
-        .addTo(map)
-        .bindTooltip(
-          `${p.name} (${p.type}): ${p.job}`
-        );
-
-      });
-
-    }
-  );
-
-
-  /* =========================
-     MY PLAYER
-     ========================= */
-
-  socket.on(
-    'me',
-    m => {
-
-      if(
-        typeof m.money === 'number'
-      ){
-
-        $('money').textContent =
-          '₦' +
-          m.money.toLocaleString();
-
-      }
-
-
-      if(
-        typeof m.energy === 'number'
-      ){
-
-        $('energy').textContent =
-          '⚡' +
-          m.energy;
-
-      }
-
-
-      $('ride').textContent =
-        m.riding
-          ? 'Get off'
-          : 'Ride ₦200';
-
-
-      $('level').textContent =
-        `Lv ${m.level}`;
-
-
-      /* =====================
-         BACKGROUND
-         ===================== */
-
-      if(m.backgroundType){
-
-        const emoji =
-          m.backgroundType === 'Nepo Baby'
-            ? '💎'
-            : '💰';
-
-
-        $('background').textContent =
-          `${emoji} ${m.backgroundType}`;
-
-      }else{
-
-        $('background').textContent =
-          '🎭 Background';
-
-      }
-
-
-      if(m.backgroundNeighborhood){
-
-        $('background').title =
-          `Started in ${m.backgroundNeighborhood}`;
-
-      }
-
-
-      if(m.note){
-
-        log(
-          m.note,
-          'sys'
-        );
-
-      }
-
-    }
-  );
-
-
-  /* =========================
-     OTHER PLAYERS
-     ========================= */
-
-  socket.on(
-    'state',
-    list => {
-
-      $('online').textContent =
-        list.length +
-        ' online';
-
-
-      list.forEach(p => {
-
-        const playerId =
-          String(p.id);
-
-
-        if(!marks[playerId]){
-
-          marks[playerId] =
-            L.circleMarker(
-              [p.lat,p.lng],
-              {
-                radius:8,
-                color:'#fff',
-                weight:2,
-                fillColor:p.color,
-                fillOpacity:1
-              }
-            )
-            .addTo(map)
-            .bindTooltip(
-              p.name,
-              {
-                permanent:true,
-                direction:'top',
-                offset:[0,-6]
-              }
-            );
-
-        }
-
-
-        marks[playerId]
-          .setLatLng(
-            [p.lat,p.lng]
-          );
-
-
-        marks[playerId]
-          .setTooltipContent(
-            `${p.name} (Lv ${p.level})`
-          );
-
-
-        if(
-          myPlayerId &&
-          playerId === String(myPlayerId) &&
-          !marks.followed
-        ){
-
-          marks.followed = true;
-
-
-          map.setView(
-            [p.lat,p.lng],
-            15
-          );
-
-        }
-
-      });
-
-
-      const ids =
-        new Set(
-          list.map(
-            p => String(p.id)
-          )
-        );
-
-
-      Object.keys(marks).forEach(k => {
-
-        if(
-          k !== 'followed' &&
-          !ids.has(k)
-        ){
-
-          map.removeLayer(
-            marks[k]
-          );
-
-          delete marks[k];
-
-        }
-
-      });
-
-    }
-  );
-
-
-  /* =========================
-     WORLD
-     ========================= */
-
-  socket.on(
-    'world',
-    w => {
-
-      /* BACKEND USES w.hour */
-
-      const hour =
-        Number(w.hour);
-
-
-      if(Number.isFinite(hour)){
-
-        const hh =
-          Math.floor(hour);
-
-        const mm =
-          Math.floor(
-            (hour - hh) * 60
-          );
-
-
-        $('clock').textContent =
-          '🕐 ' +
-          String(hh).padStart(2,'0') +
-          ':' +
-          String(mm).padStart(2,'0');
-
-
-        $('night').style.opacity =
-          (
-            hh >= 21 ||
-            hh < 5
-          )
-            ? .5
-            : (
-                hh >= 19 ||
-                hh < 7
-              )
-                ? .25
-                : 0;
-
-      }
-
-
-      /* =====================
-         NPCS
-
-         Backend sends:
-         {lat,lng,r}
-         ===================== */
-
-      (w.npcs || []).forEach(
-        (n,i) => {
-
-          if(!npcDots[i]){
-
-            npcDots[i] =
-              L.circleMarker(
-                [n.lat,n.lng],
-                {
-                  radius:
-                    Number(n.r) || 3,
-
-                  color:'#374151',
-
-                  weight:1,
-
-                  fillColor:'#9ca3af',
-
-                  fillOpacity:1,
-
-                  interactive:false
-                }
-              ).addTo(map);
-
-          }
-
-
-          npcDots[i]
-            .setLatLng(
-              [n.lat,n.lng]
-            );
-
-        }
-      );
-
-
-      /* =====================
-         BUSES
-
-         Backend sends:
-         {id,lat,lng}
-         ===================== */
-
-      (w.buses || []).forEach(
-        b => {
-
-          const busId =
-            String(b.id);
-
-
-          if(!busMarks[busId]){
-
-            busMarks[busId] =
-              L.marker(
-                [b.lat,b.lng],
-                {
-                  icon:
-                    L.divIcon({
-                      html:'🚌',
-
-                      className:'',
-
-                      iconSize:
-                        [24,24],
-
-                      iconAnchor:
-                        [12,12]
-                    }),
-
-                  interactive:false
-                }
-              ).addTo(map);
-
-          }
-
-
-          busMarks[busId]
-            .setLatLng(
-              [b.lat,b.lng]
-            );
-
-        }
-      );
-
-    }
-  );
-
-
-  /* =========================
-     CHAT
-     ========================= */
-
-  socket.on(
-    'chat',
-    c => {
-
-      log(
-        `${c.name}: ${c.message}`
-      );
-
-    }
-  );
-
-
-  /* =========================
-     MAP MOVEMENT
-     ========================= */
-
-  map.on(
-    'click',
-    e => {
-
-      socket.emit(
-        'moveTo',
-        {
-          lat:e.latlng.lat,
-          lng:e.latlng.lng
-        }
-      );
-
-    }
-  );
-
-
-  /* =========================
-     ACTIONS
-     ========================= */
-
-  $('work').onclick = () => {
-
-    socket.emit('work');
-
-  };
-
-
-  $('ride').onclick = () => {
-
-    socket.emit('ride');
-
-  };
-
-
-  $('eat').onclick = () => {
-
-    socket.emit('eat');
-
-  };
-
-
-  /* =========================
-     CHAT SEND
-     ========================= */
-
-  const send = () => {
-
-    const value =
-      $('msg').value.trim();
-
-
-    if(!value){
-      return;
-    }
-
-
-    socket.emit(
-      'chat',
-      {
-        message:value
-      }
-    );
-
-
-    $('msg').value = '';
-
-  };
-
-
-  $('send').onclick =
-    send;
-
-
-  $('msg').onkeydown =
-    e => {
-
-      if(e.key === 'Enter'){
-
-        e.preventDefault();
-
-        send();
-
-      }
-
-    };
-
-}
-
-
-/* ==========================================
+/* =========================================================
    AUTO LOGIN
-   ========================================== */
+========================================================= */
 
-async function checkExistingLogin(){
+(async function(){
 
-  if(!authToken){
-    return;
-  }
+  const token =
+    localStorage.getItem("ibadan_token");
 
+  if(token){
 
-  try{
-
-    const response =
-      await fetch(
-        '/api/auth/me',
-        {
-          headers:{
-            Authorization:
-              'Bearer ' +
-              authToken
-          }
-        }
-      );
-
-
-    if(!response.ok){
-
-      localStorage.removeItem(
-        'ibadanLifeToken'
-      );
-
-      authToken = '';
-
-      return;
-
-    }
-
-
-    const data =
-      await response.json();
-
-
-    startGame(
-      data.player
-    );
-
-
-  }catch(error){
-
-    console.error(
-      'Auto-login failed:',
-      error
-    );
+    await startGame();
 
   }
 
-}
-
-
-checkExistingLogin();
-
+})();
 </script>
 
 </body>
