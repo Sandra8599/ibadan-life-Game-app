@@ -52,6 +52,116 @@ const googleClient =
 
 
 /* =========================================================
+   GAME BACKGROUNDS
+========================================================= */
+
+/*
+  These are the starting-life backgrounds.
+
+  NEPO BABY
+  - Higher starting money
+  - Starts in a wealthier neighborhood
+
+  LAPO BABY
+  - Lower starting money
+  - Starts in an ordinary / working-class neighborhood
+
+  IMPORTANT:
+  This is only used when creating a NEW account.
+  Existing players are never randomly reassigned.
+*/
+
+const BACKGROUNDS = {
+  nepo: {
+    type: 'Nepo Baby',
+
+    minMoney: 50000,
+
+    maxMoney: 70000,
+
+    neighborhoods: [
+      'bodija',
+      'jericho',
+      'oluyole',
+      'bashorun'
+    ]
+  },
+
+  lapo: {
+    type: 'Lapo Baby',
+
+    minMoney: 5000,
+
+    maxMoney: 10000,
+
+    neighborhoods: [
+      'apata',
+      'eleyele',
+      'monatan',
+      'omiadio',
+      'odoona'
+    ]
+  }
+};
+
+
+/*
+  Random integer between min and max, inclusive.
+*/
+function randomInt(min, max) {
+  return Math.floor(
+    Math.random() *
+      (max - min + 1)
+  ) + min;
+}
+
+
+/*
+  Select a random item from an array.
+*/
+function randomItem(items) {
+  return items[
+    Math.floor(
+      Math.random() *
+      items.length
+    )
+  ];
+}
+
+
+/*
+  Background selection is performed ONLY for new accounts.
+*/
+function createRandomBackground() {
+  const isNepo =
+    Math.random() < 0.5;
+
+  const background =
+    isNepo
+      ? BACKGROUNDS.nepo
+      : BACKGROUNDS.lapo;
+
+  const neighborhood =
+    randomItem(
+      background.neighborhoods
+    );
+
+  return {
+    type:
+      background.type,
+
+    neighborhood,
+
+    money:
+      randomInt(
+        background.minMoney,
+        background.maxMoney
+      )
+  };
+}
+
+
+/* =========================================================
    DATABASE
 ========================================================= */
 
@@ -69,6 +179,7 @@ async function initDatabase() {
       email TEXT,
 
       recovery_token_hash TEXT,
+
       recovery_expires_at TIMESTAMPTZ,
 
       name VARCHAR(16) NOT NULL,
@@ -106,6 +217,23 @@ async function initDatabase() {
   await pool.query(`
     ALTER TABLE players
     ADD COLUMN IF NOT EXISTS recovery_expires_at TIMESTAMPTZ
+  `);
+
+  /*
+    NEW BACKGROUND COLUMNS
+
+    Existing players keep these as NULL.
+    New accounts receive values during INSERT.
+  */
+
+  await pool.query(`
+    ALTER TABLE players
+    ADD COLUMN IF NOT EXISTS background_type TEXT
+  `);
+
+  await pool.query(`
+    ALTER TABLE players
+    ADD COLUMN IF NOT EXISTS background_neighborhood TEXT
   `);
 
   await pool.query(`
@@ -349,7 +477,9 @@ async function getPlayerById(id) {
       xp,
       level,
       lat,
-      lng
+      lng,
+      background_type,
+      background_neighborhood
     FROM players
     WHERE id = $1
     `,
@@ -427,7 +557,13 @@ function publicPlayer(player) {
 
     lat: player.lat,
 
-    lng: player.lng
+    lng: player.lng,
+
+    backgroundType:
+      player.background_type || null,
+
+    backgroundNeighborhood:
+      player.background_neighborhood || null
   };
 }
 
@@ -450,6 +586,290 @@ app.get(
     });
   }
 );
+
+
+/* =========================================================
+   GAME WORLD
+========================================================= */
+
+const TYPES = {
+  wealthy: {
+    pay: 1.5,
+    npc: 3
+  },
+
+  middle: {
+    pay: 1.2,
+    npc: 4
+  },
+
+  ordinary: {
+    pay: 1,
+    npc: 5
+  },
+
+  commercial: {
+    pay: 1.1,
+    npc: 10
+  },
+
+  older: {
+    pay: 0.9,
+    npc: 6
+  }
+};
+
+const PLACES = [
+  {
+    id: 'mokola',
+    name: 'Mokola',
+    type: 'middle',
+    lat: 7.4040,
+    lng: 3.8990,
+    job: 'Bus conductor',
+    pay: 2500,
+    xp: 6
+  },
+
+  {
+    id: 'dugbe',
+    name: 'Dugbe Market',
+    type: 'commercial',
+    lat: 7.3890,
+    lng: 3.8830,
+    job: 'Market trader',
+    pay: 3000,
+    xp: 7
+  },
+
+  {
+    id: 'bodija',
+    name: 'Bodija',
+    type: 'wealthy',
+    lat: 7.4300,
+    lng: 3.9100,
+    job: 'Provisions seller',
+    pay: 3500,
+    xp: 8
+  },
+
+  {
+    id: 'ui',
+    name: 'University of Ibadan',
+    type: 'middle',
+    lat: 7.4443,
+    lng: 3.9000,
+    job: 'Campus tutor',
+    pay: 4500,
+    xp: 12
+  },
+
+  {
+    id: 'ringroad',
+    name: 'Ring Road',
+    type: 'commercial',
+    lat: 7.3620,
+    lng: 3.8760,
+    job: 'Okada rider',
+    pay: 3200,
+    xp: 8
+  },
+
+  {
+    id: 'challenge',
+    name: 'Challenge',
+    type: 'commercial',
+    lat: 7.3470,
+    lng: 3.8780,
+    job: 'Mechanic helper',
+    pay: 3800,
+    xp: 9
+  },
+
+  {
+    id: 'jericho',
+    name: 'Jericho',
+    type: 'wealthy',
+    lat: 7.4150,
+    lng: 3.8950,
+    job: 'Restaurant waiter',
+    pay: 3000,
+    xp: 7
+  },
+
+  {
+    id: 'iwo',
+    name: 'Iwo Road',
+    type: 'commercial',
+    lat: 7.3930,
+    lng: 3.9420,
+    job: 'Dispatch rider',
+    pay: 3600,
+    xp: 9
+  },
+
+  {
+    id: 'apata',
+    name: 'Apata',
+    type: 'ordinary',
+    lat: 7.3500,
+    lng: 3.8550,
+    job: 'Brick layer',
+    pay: 4000,
+    xp: 10
+  },
+
+  {
+    id: 'akobo',
+    name: 'Akobo',
+    type: 'ordinary',
+    lat: 7.4350,
+    lng: 3.9650,
+    job: 'Shop attendant',
+    pay: 3300,
+    xp: 8
+  },
+
+  {
+    id: 'sango',
+    name: 'Sango',
+    type: 'middle',
+    lat: 7.4220,
+    lng: 3.9200,
+    job: 'Tailor assistant',
+    pay: 3400,
+    xp: 8
+  },
+
+  {
+    id: 'mapo',
+    name: 'Mapo Hall',
+    type: 'older',
+    lat: 7.3880,
+    lng: 3.8960,
+    job: 'Tour guide',
+    pay: 3700,
+    xp: 9
+  },
+
+  {
+    id: 'okeado',
+    name: 'Oke-Ado',
+    type: 'older',
+    lat: 7.3800,
+    lng: 3.8900,
+    job: 'Bakery helper',
+    pay: 2800,
+    xp: 6
+  },
+
+  {
+    id: 'oluyole',
+    name: 'Oluyole',
+    type: 'wealthy',
+    lat: 7.3560,
+    lng: 3.8800,
+    job: 'Security guard',
+    pay: 4200,
+    xp: 10
+  },
+
+  {
+    id: 'agodi',
+    name: 'Agodi',
+    type: 'middle',
+    lat: 7.4000,
+    lng: 3.9080,
+    job: 'Hospital porter',
+    pay: 3600,
+    xp: 9
+  },
+
+  {
+    id: 'bashorun',
+    name: 'Bashorun',
+    type: 'wealthy',
+    lat: 7.4180,
+    lng: 3.9380,
+    job: 'Estate caretaker',
+    pay: 3900,
+    xp: 9
+  },
+
+  {
+    id: 'odoona',
+    name: 'Odo-Ona',
+    type: 'older',
+    lat: 7.3640,
+    lng: 3.8530,
+    job: 'Welder helper',
+    pay: 3100,
+    xp: 8
+  },
+
+  {
+    id: 'newgarage',
+    name: 'New Garage',
+    type: 'commercial',
+    lat: 7.3590,
+    lng: 3.9130,
+    job: 'Park loader',
+    pay: 3300,
+    xp: 8
+  },
+
+  {
+    id: 'eleyele',
+    name: 'Eleyele',
+    type: 'ordinary',
+    lat: 7.4160,
+    lng: 3.8550,
+    job: 'Fish seller',
+    pay: 2900,
+    xp: 7
+  },
+
+  {
+    id: 'monatan',
+    name: 'Monatan',
+    type: 'ordinary',
+    lat: 7.4080,
+    lng: 3.8440,
+    job: 'Delivery rider',
+    pay: 3200,
+    xp: 8
+  },
+
+  {
+    id: 'omiadio',
+    name: 'Omi-Adio',
+    type: 'ordinary',
+    lat: 7.3760,
+    lng: 3.8150,
+    job: 'Farm hand',
+    pay: 3000,
+    xp: 8
+  }
+];
+
+const START = PLACES[0];
+
+const byId =
+  Object.fromEntries(
+    PLACES.map(p => [
+      p.id,
+      p
+    ])
+  );
+
+
+/*
+  Find the actual PLACE object for a background
+  neighborhood.
+*/
+function backgroundPlace(neighborhood) {
+  return byId[neighborhood] || START;
+}
 
 
 /* =========================================================
@@ -547,6 +967,19 @@ app.post(
         }
       }
 
+      /*
+        NEW ACCOUNT:
+        Choose the background exactly once.
+      */
+
+      const background =
+        createRandomBackground();
+
+      const startingPlace =
+        backgroundPlace(
+          background.neighborhood
+        );
+
       const passwordHash =
         await bcrypt.hash(
           password,
@@ -568,7 +1001,9 @@ app.post(
             xp,
             level,
             lat,
-            lng
+            lng,
+            background_type,
+            background_neighborhood
           )
           VALUES
           (
@@ -577,12 +1012,14 @@ app.post(
             NULLIF($3, ''),
             $4,
             $5,
-            20000,
+            $6,
             100,
             0,
             1,
-            $6,
-            $7
+            $7,
+            $8,
+            $9,
+            $10
           )
           RETURNING
             id,
@@ -594,16 +1031,30 @@ app.post(
             xp,
             level,
             lat,
-            lng
+            lng,
+            background_type,
+            background_neighborhood
           `,
           [
             username,
+
             passwordHash,
+
             email,
+
             username,
+
             color,
-            START.lat,
-            START.lng
+
+            background.money,
+
+            startingPlace.lat,
+
+            startingPlace.lng,
+
+            background.type,
+
+            background.neighborhood
           ]
         );
 
@@ -615,6 +1066,7 @@ app.post(
 
       res.json({
         token,
+
         player:
           publicPlayer(player)
       });
@@ -707,6 +1159,7 @@ app.post(
 
       res.json({
         token,
+
         player:
           publicPlayer(player)
       });
@@ -1040,6 +1493,15 @@ app.post(
         player =
           result.rows[0];
 
+        /*
+          IMPORTANT:
+          If this is an EXISTING account,
+          do not create a new background.
+
+          Its existing money/location/background
+          remain untouched.
+        */
+
         if (player) {
           await pool.query(
             `
@@ -1059,6 +1521,11 @@ app.post(
             googleId;
         }
       }
+
+      /*
+        Only this branch creates a brand-new
+        Google account.
+      */
 
       if (!player) {
         const rawBase =
@@ -1106,6 +1573,19 @@ app.post(
           number++;
         }
 
+        /*
+          NEW GOOGLE ACCOUNT:
+          Assign the background once.
+        */
+
+        const background =
+          createRandomBackground();
+
+        const startingPlace =
+          backgroundPlace(
+            background.neighborhood
+          );
+
         result =
           await pool.query(
             `
@@ -1121,7 +1601,9 @@ app.post(
               xp,
               level,
               lat,
-              lng
+              lng,
+              background_type,
+              background_neighborhood
             )
             VALUES
             (
@@ -1130,26 +1612,39 @@ app.post(
               $3,
               $4,
               '#16a34a',
-              20000,
+              $5,
               100,
               0,
               1,
-              $5,
-              $6
+              $6,
+              $7,
+              $8,
+              $9
             )
             RETURNING *
             `,
             [
               username,
+
               googleId,
+
               email,
+
               clean(
                 payload.name ||
                   username,
                 16
               ),
-              START.lat,
-              START.lng
+
+              background.money,
+
+              startingPlace.lat,
+
+              startingPlace.lng,
+
+              background.type,
+
+              background.neighborhood
             ]
           );
 
@@ -1162,6 +1657,7 @@ app.post(
 
       res.json({
         token,
+
         player:
           publicPlayer(player)
       });
@@ -1183,276 +1679,6 @@ app.post(
 /* =========================================================
    GAME WORLD
 ========================================================= */
-
-const TYPES = {
-  wealthy: {
-    pay: 1.5,
-    npc: 3
-  },
-
-  middle: {
-    pay: 1.2,
-    npc: 4
-  },
-
-  ordinary: {
-    pay: 1,
-    npc: 5
-  },
-
-  commercial: {
-    pay: 1.1,
-    npc: 10
-  },
-
-  older: {
-    pay: 0.9,
-    npc: 6
-  }
-};
-
-const PLACES = [
-  {
-    id: 'mokola',
-    name: 'Mokola',
-    type: 'middle',
-    lat: 7.4040,
-    lng: 3.8990,
-    job: 'Bus conductor',
-    pay: 2500,
-    xp: 6
-  },
-
-  {
-    id: 'dugbe',
-    name: 'Dugbe Market',
-    type: 'commercial',
-    lat: 7.3890,
-    lng: 3.8830,
-    job: 'Market trader',
-    pay: 3000,
-    xp: 7
-  },
-
-  {
-    id: 'bodija',
-    name: 'Bodija',
-    type: 'wealthy',
-    lat: 7.4300,
-    lng: 3.9100,
-    job: 'Provisions seller',
-    pay: 3500,
-    xp: 8
-  },
-
-  {
-    id: 'ui',
-    name: 'University of Ibadan',
-    type: 'middle',
-    lat: 7.4443,
-    lng: 3.9000,
-    job: 'Campus tutor',
-    pay: 4500,
-    xp: 12
-  },
-
-  {
-    id: 'ringroad',
-    name: 'Ring Road',
-    type: 'commercial',
-    lat: 7.3620,
-    lng: 3.8760,
-    job: 'Okada rider',
-    pay: 3200,
-    xp: 8
-  },
-
-  {
-    id: 'challenge',
-    name: 'Challenge',
-    type: 'commercial',
-    lat: 7.3470,
-    lng: 3.8780,
-    job: 'Mechanic helper',
-    pay: 3800,
-    xp: 9
-  },
-
-  {
-    id: 'jericho',
-    name: 'Jericho',
-    type: 'wealthy',
-    lat: 7.4150,
-    lng: 3.8950,
-    job: 'Restaurant waiter',
-    pay: 3000,
-    xp: 7
-  },
-
-  {
-    id: 'iwo',
-    name: 'Iwo Road',
-    type: 'commercial',
-    lat: 7.3930,
-    lng: 3.9420,
-    job: 'Dispatch rider',
-    pay: 3600,
-    xp: 9
-  },
-
-  {
-    id: 'apata',
-    name: 'Apata',
-    type: 'ordinary',
-    lat: 7.3500,
-    lng: 3.8550,
-    job: 'Brick layer',
-    pay: 4000,
-    xp: 10
-  },
-
-  {
-    id: 'akobo',
-    name: 'Akobo',
-    type: 'ordinary',
-    lat: 7.4350,
-    lng: 3.9650,
-    job: 'Shop attendant',
-    pay: 3300,
-    xp: 8
-  },
-
-  {
-    id: 'sango',
-    name: 'Sango',
-    type: 'middle',
-    lat: 7.4220,
-    lng: 3.9200,
-    job: 'Tailor assistant',
-    pay: 3400,
-    xp: 8
-  },
-
-  {
-    id: 'mapo',
-    name: 'Mapo Hall',
-    type: 'older',
-    lat: 7.3880,
-    lng: 3.8960,
-    job: 'Tour guide',
-    pay: 3700,
-    xp: 9
-  },
-
-  {
-    id: 'okeado',
-    name: 'Oke-Ado',
-    type: 'older',
-    lat: 7.3800,
-    lng: 3.8900,
-    job: 'Bakery helper',
-    pay: 2800,
-    xp: 6
-  },
-
-  {
-    id: 'oluyole',
-    name: 'Oluyole',
-    type: 'wealthy',
-    lat: 7.3560,
-    lng: 3.8800,
-    job: 'Security guard',
-    pay: 4200,
-    xp: 10
-  },
-
-  {
-    id: 'agodi',
-    name: 'Agodi',
-    type: 'middle',
-    lat: 7.4000,
-    lng: 3.9080,
-    job: 'Hospital porter',
-    pay: 3600,
-    xp: 9
-  },
-
-  {
-    id: 'bashorun',
-    name: 'Bashorun',
-    type: 'wealthy',
-    lat: 7.4180,
-    lng: 3.9380,
-    job: 'Estate caretaker',
-    pay: 3900,
-    xp: 9
-  },
-
-  {
-    id: 'odoona',
-    name: 'Odo-Ona',
-    type: 'older',
-    lat: 7.3640,
-    lng: 3.8530,
-    job: 'Welder helper',
-    pay: 3100,
-    xp: 8
-  },
-
-  {
-    id: 'newgarage',
-    name: 'New Garage',
-    type: 'commercial',
-    lat: 7.3590,
-    lng: 3.9130,
-    job: 'Park loader',
-    pay: 3300,
-    xp: 8
-  },
-
-  {
-    id: 'eleyele',
-    name: 'Eleyele',
-    type: 'ordinary',
-    lat: 7.4160,
-    lng: 3.8550,
-    job: 'Fish seller',
-    pay: 2900,
-    xp: 7
-  },
-
-  {
-    id: 'monatan',
-    name: 'Monatan',
-    type: 'ordinary',
-    lat: 7.4080,
-    lng: 3.8440,
-    job: 'Delivery rider',
-    pay: 3200,
-    xp: 8
-  },
-
-  {
-    id: 'omiadio',
-    name: 'Omi-Adio',
-    type: 'ordinary',
-    lat: 7.3760,
-    lng: 3.8150,
-    job: 'Farm hand',
-    pay: 3000,
-    xp: 8
-  }
-];
-
-const START = PLACES[0];
-
-const byId =
-  Object.fromEntries(
-    PLACES.map(p => [
-      p.id,
-      p
-    ])
-  );
 
 const meters = (a, b) =>
   Math.hypot(
@@ -1733,6 +1959,16 @@ async function sendMe(
         player.bus !== null &&
         player.bus !== undefined,
 
+      /*
+        BACKGROUND DATA FOR FRONTEND
+      */
+
+      backgroundType:
+        player.backgroundType || null,
+
+      backgroundNeighborhood:
+        player.backgroundNeighborhood || null,
+
       note
     }
   );
@@ -1977,6 +2213,21 @@ io.on(
 
       level:
         Number(account.level),
+
+      /*
+        LOAD THE STORED BACKGROUND.
+
+        Existing players may have NULL here.
+        They are NOT randomly assigned.
+      */
+
+      backgroundType:
+        account.background_type ||
+        null,
+
+      backgroundNeighborhood:
+        account.background_neighborhood ||
+        null,
 
       lastWork: 0,
 
@@ -2404,7 +2655,18 @@ setInterval(
           player.lng,
 
         level:
-          player.level
+          player.level,
+
+        /*
+          Background is also available
+          in the multiplayer state.
+        */
+
+        backgroundType:
+          player.backgroundType,
+
+        backgroundNeighborhood:
+          player.backgroundNeighborhood
       });
     }
 
